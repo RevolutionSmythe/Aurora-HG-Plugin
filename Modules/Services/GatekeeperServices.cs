@@ -32,6 +32,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 
 using OpenSim.Framework;
+using OpenSim.Framework.Servers.HttpServer;
 using OpenSim.Services.Interfaces;
 using GridRegion = OpenSim.Services.Interfaces.GridRegion;
 
@@ -69,10 +70,14 @@ namespace Aurora.Addon.Hypergrid
         public void Initialize (IConfigSource config, IRegistryCore registry)
         {
             IConfig serverConfig = config.Configs["GatekeeperService"];
-            m_AllowTeleportsToAnyRegion = serverConfig.GetBoolean ("AllowTeleportsToAnyRegion", true);
-            m_ExternalName = serverConfig.GetString ("ExternalName", string.Empty);
-            if (m_ExternalName != string.Empty && !m_ExternalName.EndsWith ("/"))
-                m_ExternalName = m_ExternalName + "/";
+
+            if(serverConfig != null)
+                m_AllowTeleportsToAnyRegion = serverConfig.GetBoolean ("AllowTeleportsToAnyRegion", true);
+            uint port = serverConfig.GetUInt ("GatekeeperServicePort", 8003);
+
+            IHttpServer server = registry.RequestModuleInterface<ISimulationBase> ().GetHttpServer (port);
+            m_ExternalName = server.HostName + ":" + port + "/";
+            registry.RegisterModuleInterface<IGatekeeperService> (this);
         }
 
         public void Start (IConfigSource config, IRegistryCore registry)
@@ -108,9 +113,27 @@ namespace Aurora.Addon.Hypergrid
                 }
                 else
                 {
-                    reason = "Grid setup problem. Try specifying a particular region here.";
-                    m_log.DebugFormat ("[GATEKEEPER SERVICE]: Unable to send information. Please specify a default region for this grid!");
-                    return false;
+                    defs = m_GridService.GetFallbackRegions (m_ScopeID, 0, 0);
+                    if (defs != null && defs.Count > 0)
+                    {
+                        region = defs[0];
+                        m_DefaultGatewayRegion = region;
+                    }
+                    else
+                    {
+                        defs = m_GridService.GetSafeRegions (m_ScopeID, 0, 0);
+                        if (defs != null && defs.Count > 0)
+                        {
+                            region = defs[0];
+                            m_DefaultGatewayRegion = region;
+                        }
+                        else
+                        {
+                            reason = "Grid setup problem. Try specifying a particular region here.";
+                            m_log.DebugFormat ("[GATEKEEPER SERVICE]: Unable to send information. Please specify a default region for this grid!");
+                            return false;
+                        }
+                    }
                 }
             }
             else
@@ -192,7 +215,7 @@ namespace Aurora.Addon.Hypergrid
                 m_log.InfoFormat ("[GATEKEEPER SERVICE]: Unable to verify identity of agent {0}. Refusing service.", aCircuit.AgentID);
                 return false;
             }
-            m_log.DebugFormat ("[GATEKEEPER SERVICE]: Identity verified for {0} @ {2}", aCircuit.AgentID, authURL);
+            m_log.DebugFormat ("[GATEKEEPER SERVICE]: Identity verified for {0} @ {1}", aCircuit.AgentID, authURL);
 
             //
             // Check for impersonations
@@ -249,7 +272,7 @@ namespace Aurora.Addon.Hypergrid
             //
             // Adjust the visible name
             //
-            /*if (account != null)
+            if (account != null)
             {
                 aCircuit.firstname = account.FirstName;
                 aCircuit.lastname = account.LastName;
@@ -267,7 +290,7 @@ namespace Aurora.Addon.Hypergrid
                     m_log.WarnFormat ("[GATEKEEPER SERVICE]: Malformed HomeURI (this should never happen): {0}", aCircuit.ServiceURLs["HomeURI"]);
                     aCircuit.lastname = "@" + aCircuit.ServiceURLs["HomeURI"].ToString ();
                 }
-            }*/
+            }
 
             //
             // Finally launch the agent at the destination

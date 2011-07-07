@@ -37,6 +37,7 @@ using System.Xml;
 using Nini.Config;
 using log4net;
 using OpenSim.Framework;
+using OpenSim.Framework.Servers.HttpServer;
 using OpenSim.Services.Interfaces;
 using GridRegion = OpenSim.Services.Interfaces.GridRegion;
 using OpenMetaverse;
@@ -63,7 +64,7 @@ namespace Aurora.Addon.Hypergrid
 
         protected UUID m_ScopeID = UUID.Zero;
         protected bool m_Check4096 = true;
-        protected string m_MapTileDirectory = string.Empty;
+        protected string m_MapTileDirectory = "hgmaptiles";
         protected string m_ThisGatekeeper = string.Empty;
         protected Uri m_ThisGatekeeperURI = null;
 
@@ -109,17 +110,13 @@ namespace Aurora.Addon.Hypergrid
             if (gridConfig != null)
             {
                 m_Check4096 = gridConfig.GetBoolean ("Check4096", true);
-                m_MapTileDirectory = gridConfig.GetString ("MapTileDirectory", "maptiles");
-                m_ThisGatekeeper = gridConfig.GetString ("Gatekeeper", string.Empty);
-                try
-                {
-                    m_ThisGatekeeperURI = new Uri (m_ThisGatekeeper);
-                }
-                catch
-                {
-                    m_log.WarnFormat ("[HYPERGRID LINKER]: Malformed URL in [GridService], variable Gatekeeper = {0}", m_ThisGatekeeper);
-                }
+                m_MapTileDirectory = gridConfig.GetString ("MapTileDirectory", "hgmaptiles");
             }
+            gridConfig = config.Configs["GatekeeperService"];
+            uint port = gridConfig == null ? 8003 : gridConfig.GetUInt ("GatekeeperServicePort", 8003);
+
+            IHttpServer server = registry.RequestModuleInterface<ISimulationBase> ().GetHttpServer (port);
+            m_ThisGatekeeperURI = new Uri (server.HostName + ":" + server.Port);
 
             if (!string.IsNullOrEmpty (m_MapTileDirectory))
             {
@@ -139,9 +136,6 @@ namespace Aurora.Addon.Hypergrid
                 MainConsole.Instance.Commands.AddCommand ("link-region",
                     "link-region <Xloc> <Yloc> <ServerURI> [<RemoteRegionName>]",
                     "Link a HyperGrid Region. Examples for <ServerURI>: http://grid.net:8002/ or http://example.org/path/foo.php", RunCommand);
-                MainConsole.Instance.Commands.AddCommand ("link-region",
-                    "link-region <Xloc> <Yloc> <RegionIP> <RegionPort> [<RemoteRegionName>]",
-                    "Link a hypergrid region (deprecated)", RunCommand);
                 MainConsole.Instance.Commands.AddCommand ("unlink-region",
                     "unlink-region <local name>",
                     "Unlink a hypergrid region", RunCommand);
@@ -280,7 +274,7 @@ namespace Aurora.Addon.Hypergrid
                 }
             }
 
-            if (remoteRegionName != string.Empty)
+            if (remoteRegionName != string.Empty && remoteRegionName != null)
                 regInfo.RegionName = remoteRegionName;
 
             regInfo.RegionLocX = xloc;

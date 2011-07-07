@@ -309,7 +309,8 @@ namespace Aurora.Addon.Hypergrid
                 return false;
             }
 
-            string uri = destination.ServerURI + AgentPath () + aCircuit.AgentID + "/";
+            string uri = (destination.ServerURI.EndsWith ("/") ? destination.ServerURI : (destination.ServerURI + "/"))
+                + AgentPath () + aCircuit.AgentID + "/";
 
             try
             {

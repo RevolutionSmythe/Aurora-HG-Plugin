@@ -31,6 +31,7 @@ using System.Net;
 using System.Reflection;
 
 using OpenSim.Framework;
+using OpenSim.Framework.Servers.HttpServer;
 using OpenSim.Services.Interfaces;
 using GridRegion = OpenSim.Services.Interfaces.GridRegion;
 using FriendInfo = OpenSim.Services.Interfaces.FriendInfo;
@@ -50,7 +51,7 @@ namespace Aurora.Addon.Hypergrid
     /// needs to do it for them.
     /// Once we have better clients, this shouldn't be needed.
     /// </summary>
-    public class UserAgentService : IUserAgentService
+    public class UserAgentService : IUserAgentService, IService
     {
         private static readonly ILog m_log =
                 LogManager.GetLogger (
@@ -74,43 +75,42 @@ namespace Aurora.Addon.Hypergrid
 
         protected static bool m_BypassClientVerification;
 
-        public UserAgentService (IConfigSource config, IRegistryCore registry, IFriendsSimConnector friendsConnector)
+        public void Initialize (IConfigSource config, IRegistryCore registry)
         {
-            // Let's set this always, because we don't know the sequence
-            // of instantiations
-            if (friendsConnector != null)
-                m_FriendsLocalSimConnector = friendsConnector;
+            registry.RegisterModuleInterface<IUserAgentService> (this);
+        }
 
-            if (!m_Initialized)
+        public void Start (IConfigSource config, IRegistryCore registry)
+        {
+            m_log.DebugFormat ("[HOME USERS SECURITY]: Starting...");
+
+            //m_FriendsSimConnector = new FriendsSimConnector ();
+
+            IConfig serverConfig = config.Configs["UserAgentService"];
+            if (serverConfig == null)
+                throw new Exception (String.Format ("No section UserAgentService in config file"));
+
+            m_GridService = registry.RequestModuleInterface<IGridService> ();
+            m_GatekeeperConnector = new GatekeeperServiceConnector ();
+            m_GatekeeperService = registry.RequestModuleInterface<IGatekeeperService> ();
+            m_FriendsService = registry.RequestModuleInterface<IFriendsService> ();
+            m_PresenceService = registry.RequestModuleInterface<IAgentInfoService> ();
+            m_UserAccountService = registry.RequestModuleInterface<IUserAccountService> ();
+
+            m_GridName = serverConfig.GetString ("ExternalName", string.Empty);
+            if (m_GridName == string.Empty)
             {
-                m_Initialized = true;
+                serverConfig = config.Configs["GatekeeperService"];
+                uint port = serverConfig.GetUInt ("GatekeeperServicePort", 8003);
 
-                m_log.DebugFormat ("[HOME USERS SECURITY]: Starting...");
-
-                //m_FriendsSimConnector = new FriendsSimConnector ();
-
-                IConfig serverConfig = config.Configs["UserAgentService"];
-                if (serverConfig == null)
-                    throw new Exception (String.Format ("No section UserAgentService in config file"));
-
-                m_GridService = registry.RequestModuleInterface<IGridService> ();
-                m_GatekeeperConnector = new GatekeeperServiceConnector ();
-                m_GatekeeperService = registry.RequestModuleInterface<IGatekeeperService> ();
-                m_FriendsService = registry.RequestModuleInterface<IFriendsService> ();
-                m_PresenceService = registry.RequestModuleInterface<IAgentInfoService> ();
-                m_UserAccountService = registry.RequestModuleInterface<IUserAccountService> ();
-
-                m_GridName = serverConfig.GetString ("ExternalName", string.Empty);
-                if (m_GridName == string.Empty)
-                {
-                    serverConfig = config.Configs["GatekeeperService"];
-                    m_GridName = serverConfig.GetString ("ExternalName", string.Empty);
-                }
-                if (!m_GridName.EndsWith ("/"))
-                    m_GridName = m_GridName + "/";
+                IHttpServer server = registry.RequestModuleInterface<ISimulationBase> ().GetHttpServer (port);
+                m_GridName = server.HostName + ":" + port + "/";
             }
         }
 
+        public void FinishedStartup ()
+        {
+        }
         public GridRegion GetHomeRegion (UUID userID, out Vector3 position, out Vector3 lookAt)
         {
             position = new Vector3 (128, 128, 0);
@@ -133,6 +133,18 @@ namespace Aurora.Addon.Hypergrid
                     List<GridRegion> defs = m_GridService.GetDefaultRegions (UUID.Zero);
                     if (defs != null && defs.Count > 0)
                         home = defs[0];
+                    if (home == null)
+                    {
+                        defs = m_GridService.GetFallbackRegions (UUID.Zero, 0, 0);
+                        if (defs != null && defs.Count > 0)
+                            home = defs[0];
+                        if (home == null)
+                        {
+                            defs = m_GridService.GetSafeRegions (UUID.Zero, 0, 0);
+                            if (defs != null && defs.Count > 0)
+                                home = defs[0];
+                        }
+                    }
                 }
             }
 
@@ -141,7 +153,7 @@ namespace Aurora.Addon.Hypergrid
 
         public bool LoginAgentToGrid (AgentCircuitData agentCircuit, GridRegion gatekeeper, GridRegion finalDestination, IPEndPoint clientIP, out string reason)
         {
-            m_log.DebugFormat ("[USER AGENT SERVICE]: Request to login user {0} (@{2}) to grid {3}",
+            m_log.DebugFormat ("[USER AGENT SERVICE]: Request to login user {0} (@{1}) to grid {2}",
                 agentCircuit.AgentID, ((clientIP == null) ? "stored IP" : clientIP.Address.ToString ()), gatekeeper.ServerURI);
             // Take the IP address + port of the gatekeeper (reg) plus the info of finalDestination
             GridRegion region = new GridRegion ();
@@ -190,6 +202,8 @@ namespace Aurora.Addon.Hypergrid
 
                 return false;
             }
+            else
+                reason = "";
 
             m_log.DebugFormat ("[USER AGENT SERVICE]: Gatekeeper sees me as {0}", myExternalIP);
             // else set the IP addresses associated with this client

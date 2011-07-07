@@ -54,6 +54,8 @@ namespace Aurora.Addon.Hypergrid
 
         private IUserAgentService m_HomeUsersService;
         private string[] m_AuthorizedCallers;
+        private IConfigSource config;
+        private IRegistryCore registry;
 
         private bool m_VerifyCallers = false;
 
@@ -65,8 +67,13 @@ namespace Aurora.Addon.Hypergrid
 
         public void Start (IConfigSource config, IRegistryCore registry)
         {
+            this.config = config;
+            this.registry = registry;
+        }
+
+        public void FinishedStartup ()
+        {
             IConfig gridConfig = config.Configs["UserAgentService"];
-            string loginServerIP = gridConfig.GetString ("LoginServerIP", "127.0.0.1");
             bool proxy = gridConfig.GetBoolean ("HasProxy", false);
 
             m_VerifyCallers = gridConfig.GetBoolean ("VerifyCallers", false);
@@ -74,8 +81,9 @@ namespace Aurora.Addon.Hypergrid
             csv = csv.Replace (" ", "");
             m_AuthorizedCallers = csv.Split (',');
 
-            //TODO: HACK
-            IHttpServer server = registry.RequestModuleInterface<ISimulationBase> ().GetHttpServer (8003);
+            gridConfig = config.Configs["UserAgentService"];
+            uint port = gridConfig.GetUInt ("GatekeeperServicePort", 8003);
+            IHttpServer server = registry.RequestModuleInterface<ISimulationBase> ().GetHttpServer (port);
 
             server.AddXmlRPCHandler ("agent_is_coming_home", AgentIsComingHome, false);
             server.AddXmlRPCHandler ("get_home_region", GetHomeRegion, false);
@@ -90,12 +98,17 @@ namespace Aurora.Addon.Hypergrid
             server.AddXmlRPCHandler ("locate_user", LocateUser, false);
             server.AddXmlRPCHandler ("get_uui", GetUUI, false);
 
-            server.AddHTTPHandler ("/homeagent/", new HomeAgentHandler (m_HomeUsersService, loginServerIP, proxy).Handler);
             m_HomeUsersService = registry.RequestModuleInterface<IUserAgentService> ();
-        }
-
-        public void FinishedStartup ()
-        {
+            string ip = server.HostName.Replace("http://", "");
+            try
+            {
+                IPAddress[] addresslist = Dns.GetHostAddresses (ip);
+                ip = addresslist[0].ToString();
+            }
+            catch
+            {
+            }
+            server.AddHTTPHandler ("/homeagent", new HomeAgentHandler (m_HomeUsersService, ip, proxy).Handler);
         }
 
         #endregion

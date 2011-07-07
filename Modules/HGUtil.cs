@@ -57,7 +57,7 @@ namespace Aurora.Addon.Hypergrid
         /// <returns>uuid[;endpoint[;name]]</returns>
         public static string ProduceUserUniversalIdentifier (AgentCircuitData acircuit)
         {
-            /*if (acircuit.ServiceURLs.ContainsKey ("HomeURI"))
+            if (acircuit.ServiceURLs.ContainsKey ("HomeURI"))
             {
                 string agentsURI = acircuit.ServiceURLs["HomeURI"].ToString ();
                 if (!agentsURI.EndsWith ("/"))
@@ -74,8 +74,7 @@ namespace Aurora.Addon.Hypergrid
                 return acircuit.AgentID.ToString () + ";" + agentsURI + ";" + acircuit.firstname + " " + acircuit.lastname;
             }
             else
-                return acircuit.AgentID.ToString ();*/
-            throw new NotImplementedException ("NO SERVICE URLS");
+                return acircuit.AgentID.ToString ();
         }
         #endregion
     }

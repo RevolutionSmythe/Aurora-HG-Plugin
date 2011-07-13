@@ -112,6 +112,7 @@ namespace Aurora.Addon.Hypergrid
                 m_Check4096 = gridConfig.GetBoolean ("Check4096", true);
                 m_MapTileDirectory = gridConfig.GetString ("MapTileDirectory", "hgmaptiles");
             }
+            registry.RegisterModuleInterface<HypergridLinker> (this);//Add the interface
             gridConfig = config.Configs["GatekeeperService"];
             uint port = gridConfig == null ? 8003 : gridConfig.GetUInt ("GatekeeperServicePort", 8003);
 

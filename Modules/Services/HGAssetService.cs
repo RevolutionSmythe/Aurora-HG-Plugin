@@ -38,6 +38,7 @@ using OpenSim.Framework;
 using OpenSim.Framework.Serialization.External;
 using OpenSim.Services.Interfaces;
 using OpenSim.Services.AssetService;
+using OpenSim.Services;
 
 namespace Aurora.Addon.Hypergrid
 {
@@ -78,11 +79,20 @@ namespace Aurora.Addon.Hypergrid
             m_UserAccountService = registry.RequestModuleInterface<IUserAccountService> ();
         }
 
+        public override void FinishedStartup ()
+        {
+            AssetServiceConnector assetHandler = m_registry.RequestModuleInterface<AssetServiceConnector> ();
+            if (assetHandler != null)//Add the external handler
+            {
+                assetHandler.AddExistingUrlForClient ("", "/assets", 0);
+            }
+        }
+
         #region IAssetService overrides
         public override AssetBase Get (string id)
         {
             string url = string.Empty;
-            string assetID = string.Empty;
+            string assetID = id;
             if (StringToUrlAndAssetID (id, out url, out assetID))
             {
                 IAssetService connector = GetConnector (url);

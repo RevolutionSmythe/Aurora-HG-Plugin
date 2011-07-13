@@ -73,10 +73,9 @@ namespace Aurora.Addon.Hypergrid
 
             if(serverConfig != null)
                 m_AllowTeleportsToAnyRegion = serverConfig.GetBoolean ("AllowTeleportsToAnyRegion", true);
-            uint port = serverConfig.GetUInt ("GatekeeperServicePort", 8003);
-
-            IHttpServer server = registry.RequestModuleInterface<ISimulationBase> ().GetHttpServer (port);
-            m_ExternalName = server.HostName + ":" + port + "/";
+            
+            IHttpServer server = registry.RequestModuleInterface<ISimulationBase> ().GetHttpServer (0);
+            m_ExternalName = server.HostName + ":" + server.Port + "/";
             registry.RegisterModuleInterface<IGatekeeperService> (this);
         }
 

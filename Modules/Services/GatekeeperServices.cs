@@ -169,6 +169,7 @@ namespace Aurora.Addon.Hypergrid
         }
 
         #region Login Agent
+
         public bool LoginAgent (AgentCircuitData aCircuit, GridRegion destination, out string reason)
         {
             reason = string.Empty;
@@ -353,12 +354,6 @@ namespace Aurora.Addon.Hypergrid
 
             return string.Equals (addressee, externalname, StringComparison.OrdinalIgnoreCase);
         }
-
-        #endregion
-
-
-        #region Misc
-
 
         #endregion
     }

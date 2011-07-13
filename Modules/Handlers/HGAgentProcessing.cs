@@ -111,14 +111,14 @@ namespace Aurora.Addon.Hypergrid
                     if (circuitData.ServiceURLs == null)
                         circuitData.ServiceURLs = new Dictionary<string, object> ();
                     GatekeeperServiceInConnector gateKeeper = m_registry.RequestModuleInterface<GatekeeperServiceInConnector>();
-                    circuitData.ServiceURLs["HomeURI"] = gateKeeper.HostName + ":" + gateKeeper.Port;
-                    circuitData.ServiceURLs["GatekeeperURI"] = gateKeeper.HostName + ":" + gateKeeper.Port;
-                    circuitData.ServiceURLs["InventoryServerURI"] = gateKeeper.HostName + ":" + gateKeeper.Port;
-                    circuitData.ServiceURLs["AssetServerURI"] = gateKeeper.HostName + ":" + gateKeeper.Port;
-                    circuitData.ServiceURLs["ProfileServerURI"] = gateKeeper.HostName + ":" + gateKeeper.Port;
-                    circuitData.ServiceURLs["FriendsServerURI"] = gateKeeper.HostName + ":" + gateKeeper.Port;
-                    circuitData.ServiceURLs["IMServerURI"] = gateKeeper.HostName + ":" + gateKeeper.Port;
-                    string userAgentDriver = circuitData.ServiceURLs["HomeURI"].ToString ();
+                    circuitData.ServiceURLs["HomeURI"] = GetHandlers.GATEKEEPER_URL;
+                    circuitData.ServiceURLs["GatekeeperURI"] = GetHandlers.GATEKEEPER_URL;
+                    circuitData.ServiceURLs["InventoryServerURI"] = GetHandlers.GATEKEEPER_URL;
+                    circuitData.ServiceURLs["AssetServerURI"] = GetHandlers.GATEKEEPER_URL;
+                    circuitData.ServiceURLs["ProfileServerURI"] = GetHandlers.GATEKEEPER_URL;
+                    circuitData.ServiceURLs["FriendsServerURI"] = GetHandlers.GATEKEEPER_URL;
+                    circuitData.ServiceURLs["IMServerURI"] = GetHandlers.GATEKEEPER_URL;
+                    string userAgentDriver = GetHandlers.GATEKEEPER_URL;
                     IUserAgentService connector = new UserAgentServiceConnector (userAgentDriver);
                     regionAccepted = connector.LoginAgentToGrid (circuitData, originalDest, neighbor, out reason);
                 }

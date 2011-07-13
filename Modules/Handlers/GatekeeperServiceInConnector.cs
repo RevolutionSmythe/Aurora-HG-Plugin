@@ -48,9 +48,6 @@ namespace Aurora.Addon.Hypergrid
 
         bool m_Proxy = false;
 
-        public uint Port = 8003;
-        public string HostName = "";
-
         public void Initialize (IConfigSource config, IRegistryCore registry)
         {
         }
@@ -62,12 +59,7 @@ namespace Aurora.Addon.Hypergrid
             if (gridConfig != null)
                 m_Proxy = gridConfig.GetBoolean ("HasProxy", false);
 
-            Port = gridConfig.GetUInt ("GatekeeperServicePort", 8003);
-
-            IHttpServer server = registry.RequestModuleInterface<ISimulationBase> ().GetHttpServer (Port);
-            Port = server.Port;
-            HostName = server.HostName;
-
+            IHttpServer server = MainServer.Instance;
             HypergridHandlers hghandlers = new HypergridHandlers (registry.RequestModuleInterface<IGatekeeperService> ());
             server.AddXmlRPCHandler ("link_region", hghandlers.LinkRegionRequest, false);
             server.AddXmlRPCHandler ("get_region", hghandlers.GetRegion, false);

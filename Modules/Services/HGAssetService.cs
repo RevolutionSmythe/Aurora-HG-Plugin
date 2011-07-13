@@ -70,7 +70,7 @@ namespace Aurora.Addon.Hypergrid
                 return;
             m_log.Debug ("[HGAsset Service]: Starting");
             Configure (config, registry);
-            m_ProfileServiceURL = MainServer.Instance.HostName + ":" + MainServer.Instance.Port + "/profiles";
+            m_ProfileServiceURL = GetHandlers.PROFILE_URL;
         }
 
         public override void Start (IConfigSource config, IRegistryCore registry)
@@ -81,6 +81,14 @@ namespace Aurora.Addon.Hypergrid
         #region IAssetService overrides
         public override AssetBase Get (string id)
         {
+            string url = string.Empty;
+            string assetID = string.Empty;
+            if (StringToUrlAndAssetID (id, out url, out assetID))
+            {
+                IAssetService connector = GetConnector (url);
+                return connector.Get (assetID);
+            }
+
             AssetBase asset = base.Get (id);
 
             if (asset == null)
@@ -88,7 +96,6 @@ namespace Aurora.Addon.Hypergrid
 
             if (asset.Metadata.Type == (sbyte)AssetType.Object)
                 asset.Data = AdjustIdentifiers (asset.Data);
-            ;
 
             AdjustIdentifiers (asset.Metadata);
 
@@ -97,6 +104,15 @@ namespace Aurora.Addon.Hypergrid
 
         public override AssetMetadata GetMetadata (string id)
         {
+            string url = string.Empty;
+            string assetID = string.Empty;
+
+            if (StringToUrlAndAssetID (id, out url, out assetID))
+            {
+                IAssetService connector = GetConnector (url);
+                return connector.GetMetadata (assetID);
+            }
+
             AssetMetadata meta = base.GetMetadata (id);
 
             if (meta == null)
@@ -119,6 +135,49 @@ namespace Aurora.Addon.Hypergrid
 
         //public virtual bool Get(string id, Object sender, AssetRetrieved handler)
 
+        public override AssetBase GetCached (string id)
+        {
+            string url = string.Empty;
+            string assetID = string.Empty;
+
+            if (StringToUrlAndAssetID (id, out url, out assetID))
+            {
+                IAssetService connector = GetConnector (url);
+                return connector.GetCached (assetID);
+            }
+            AssetBase asset = base.GetCached (id);
+            AdjustIdentifiers (asset.Metadata);
+            return asset;
+        }
+
+        public override bool Get (string id, object sender, AssetRetrieved handler)
+        {
+            string url = string.Empty;
+            string assetID = string.Empty;
+
+            if (StringToUrlAndAssetID (id, out url, out assetID))
+            {
+                IAssetService connector = GetConnector (url);
+                return connector.Get (assetID, sender, handler);
+            }
+            return base.Get (id, sender, handler);
+        }
+
+        public override string Store (AssetBase asset)
+        {
+            string url = string.Empty;
+            string assetID = string.Empty;
+
+            if (StringToUrlAndAssetID (asset.ID, out url, out assetID))
+            {
+                IAssetService connector = GetConnector (url);
+                // Restore the assetID to a simple UUID
+                asset.ID = assetID;
+                return connector.Store (asset);
+            }
+            return base.Store (asset);
+        }
+
         public override bool Delete (string id)
         {
             // NOGO
@@ -140,6 +199,51 @@ namespace Aurora.Addon.Hypergrid
             return Utils.StringToBytes (ExternalRepresentationUtils.RewriteSOP (xml, m_ProfileServiceURL, m_UserAccountService, UUID.Zero));
         }
 
+        private Dictionary<string, IAssetService> m_connectors = new Dictionary<string, IAssetService> ();
+
+        private IAssetService GetConnector (string url)
+        {
+            IAssetService connector = null;
+            lock (m_connectors)
+            {
+                if (m_connectors.ContainsKey (url))
+                {
+                    connector = m_connectors[url];
+                }
+                else
+                {
+                    // Still not as flexible as I would like this to be,
+                    // but good enough for now
+                    string connectorType = new HeloServicesConnector (url).Helo ();
+                    m_log.DebugFormat ("[HG ASSET SERVICE]: HELO returned {0}", connectorType);
+                    if (connectorType == "opensim-simian")
+                        connector = new OpenSim.Services.Connectors.SimianGrid.SimianAssetServiceConnector (url);
+                    else
+                        connector = new OpenSim.Services.Connectors.AssetServicesConnector (url);
+
+                    m_connectors.Add (url, connector);
+                }
+            }
+            return connector;
+        }
+
+        private bool StringToUrlAndAssetID (string id, out string url, out string assetID)
+        {
+            url = String.Empty;
+            assetID = String.Empty;
+
+            Uri assetUri;
+
+            if (Uri.TryCreate (id, UriKind.Absolute, out assetUri) &&
+                    assetUri.Scheme == Uri.UriSchemeHttp)
+            {
+                url = "http://" + assetUri.Authority;
+                assetID = assetUri.LocalPath.Trim (new char[] { '/' });
+                return true;
+            }
+
+            return false;
+        }
     }
 
 }

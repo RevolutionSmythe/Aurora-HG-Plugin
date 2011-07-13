@@ -102,16 +102,10 @@ namespace Aurora.Addon.Hypergrid
             server.AddXmlRPCHandler ("get_uui", GetUUI, false);
 
             m_HomeUsersService = registry.RequestModuleInterface<IUserAgentService> ();
-            string ip = server.HostName.Replace("http://", "");
-            try
-            {
-                IPAddress[] addresslist = Dns.GetHostAddresses (ip);
-                ip = addresslist[0].ToString();
-            }
-            catch
-            {
-            }
-            server.AddHTTPHandler ("/homeagent", new HomeAgentHandler (m_HomeUsersService, ip, proxy).Handler);
+            Uri m_Uri = new Uri (server.HostName);
+            IPAddress ip = Util.GetHostFromDNS (m_Uri.Host);
+            string sip = ip.ToString ();
+            server.AddHTTPHandler ("/homeagent", new HomeAgentHandler (m_HomeUsersService, sip, proxy).Handler);
         }
 
         #endregion

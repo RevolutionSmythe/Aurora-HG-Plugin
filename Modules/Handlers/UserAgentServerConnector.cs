@@ -73,6 +73,10 @@ namespace Aurora.Addon.Hypergrid
 
         public void FinishedStartup ()
         {
+            IConfig hgConfig = config.Configs["HyperGrid"];
+            if (hgConfig == null || !hgConfig.GetBoolean ("Enabled", false))
+                return;
+
             IConfig gridConfig = config.Configs["UserAgentService"];
             bool proxy = gridConfig.GetBoolean ("HasProxy", false);
 

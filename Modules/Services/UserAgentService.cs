@@ -77,11 +77,19 @@ namespace Aurora.Addon.Hypergrid
 
         public void Initialize (IConfigSource config, IRegistryCore registry)
         {
+            IConfig hgConfig = config.Configs["HyperGrid"];
+            if (hgConfig == null || !hgConfig.GetBoolean ("Enabled", false))
+                return;
+
             registry.RegisterModuleInterface<IUserAgentService> (this);
         }
 
         public void Start (IConfigSource config, IRegistryCore registry)
         {
+            IConfig hgConfig = config.Configs["HyperGrid"];
+            if (hgConfig == null || !hgConfig.GetBoolean ("Enabled", false))
+                return;
+
             m_log.DebugFormat ("[HOME USERS SECURITY]: Starting...");
 
             //m_FriendsSimConnector = new FriendsSimConnector ();

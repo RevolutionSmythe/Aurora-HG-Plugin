@@ -23,6 +23,10 @@ namespace Aurora.Addon.Hypergrid
         protected GatekeeperServiceConnector m_GatekeeperConnector;
         public override void Initialize (IConfigSource config, IRegistryCore registry)
         {
+            IConfig hgConfig = config.Configs["HyperGrid"];
+            if (hgConfig == null || !hgConfig.GetBoolean ("Enabled", false))
+                return;
+
             m_registry = registry;
             IConfig agentConfig = config.Configs["AgentProcessing"];
             if (agentConfig != null)

@@ -94,6 +94,10 @@ namespace Aurora.Addon.Hypergrid
 
         public override void Initialize (IConfigSource config, IRegistryCore registry)
         {
+            IConfig hgConfig = config.Configs["HyperGrid"];
+            if (hgConfig == null || !hgConfig.GetBoolean ("Enabled", false))
+                return;
+
             IConfig handlerConfig = config.Configs["Handlers"];
             if (handlerConfig.GetString("GridHandler", "") != Name)
                 return;

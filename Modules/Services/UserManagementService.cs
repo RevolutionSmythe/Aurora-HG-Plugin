@@ -74,6 +74,10 @@ namespace Aurora.Addon.Hypergrid
 
         public void Initialise (IConfigSource config)
         {
+            IConfig hgConfig = config.Configs["HyperGrid"];
+            if (hgConfig == null || !hgConfig.GetBoolean ("Enabled", false))
+                return;
+
             MainConsole.Instance.Commands.AddCommand (
                 "show names",
                 "show names",
@@ -107,6 +111,10 @@ namespace Aurora.Addon.Hypergrid
 
         public void AddRegion (Scene scene)
         {
+            IConfig hgConfig = config.Configs["HyperGrid"];
+            if (hgConfig == null || !hgConfig.GetBoolean ("Enabled", false))
+                return;
+
             m_Scenes.Add (scene);
 
             scene.RegisterModuleInterface<IUserManagement> (this);

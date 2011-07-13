@@ -69,6 +69,10 @@ namespace Aurora.Addon.Hypergrid
 
         public void Initialize (IConfigSource config, IRegistryCore registry)
         {
+            IConfig hgConfig = config.Configs["HyperGrid"];
+            if (hgConfig == null || !hgConfig.GetBoolean ("Enabled", false))
+                return;
+
             IConfig serverConfig = config.Configs["GatekeeperService"];
 
             if(serverConfig != null)

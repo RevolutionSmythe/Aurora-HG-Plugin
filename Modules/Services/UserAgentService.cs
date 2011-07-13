@@ -91,7 +91,7 @@ namespace Aurora.Addon.Hypergrid
                 throw new Exception (String.Format ("No section UserAgentService in config file"));
 
             m_GridService = registry.RequestModuleInterface<IGridService> ();
-            m_GatekeeperConnector = new GatekeeperServiceConnector ();
+            m_GatekeeperConnector = new GatekeeperServiceConnector (registry.RequestModuleInterface<IAssetService>());
             m_GatekeeperService = registry.RequestModuleInterface<IGatekeeperService> ();
             m_FriendsService = registry.RequestModuleInterface<IFriendsService> ();
             m_PresenceService = registry.RequestModuleInterface<IAgentInfoService> ();

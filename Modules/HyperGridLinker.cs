@@ -47,7 +47,7 @@ using Aurora.Framework;
 
 namespace Aurora.Addon.Hypergrid
 {
-    public class HypergridLinker : IService
+    public class HypergridLinker : IService, ICommunicationService
     {
         private static readonly ILog m_log =
                 LogManager.GetLogger (
@@ -737,5 +737,33 @@ namespace Aurora.Addon.Hypergrid
         }
 
         #endregion
+
+        public GridRegion GetRegionForGrid (string regionName, string url)
+        {
+            int xloc = random.Next (0, Int16.MaxValue) * (int)Constants.RegionSize;
+            int yloc = random.Next (0, Int16.MaxValue) * (int)Constants.RegionSize;
+            string host = "127.0.0.1";
+            string portstr;
+            uint port = 0;
+            string[] parts = url.Split (new char[] { ':' });
+            if (parts.Length >= 1)
+                host = parts[0];
+            if (parts.Length >= 2)
+            {
+                portstr = parts[1];
+                UInt32.TryParse (portstr, out port);
+            }
+            GridRegion r;
+            string reason;
+            if (TryCreateLink (UUID.Zero, xloc, yloc, regionName, port, host, UUID.Zero, out r, out reason))
+                return r;
+            return null;
+        }
+
+        public OpenMetaverse.StructuredData.OSDMap GetUrlsForUser (GridRegion region, UUID userID)
+        {
+            //HG doesn't do this
+            return null;
+        }
     }
 }

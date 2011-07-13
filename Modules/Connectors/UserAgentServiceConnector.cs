@@ -269,6 +269,11 @@ namespace Aurora.Addon.Hypergrid
             // no-op
         }
 
+        public GridRegion GetHomeRegion (AgentCircuitData circuit, out Vector3 position, out Vector3 lookAt)
+        {
+            return GetHomeRegion (circuit.AgentID, out position, out lookAt);
+        }
+
         public GridRegion GetHomeRegion (UUID userID, out Vector3 position, out Vector3 lookAt)
         {
             position = Vector3.UnitY;
@@ -385,6 +390,11 @@ namespace Aurora.Addon.Hypergrid
             XmlRpcRequest request = new XmlRpcRequest ("verify_agent", paramList);
             string reason = string.Empty;
             return GetBoolResponse (request, out reason);
+        }
+
+        public bool VerifyAgent (AgentCircuitData circuit)
+        {
+            return VerifyAgent (circuit.SessionID, circuit.ServiceSessionID);
         }
 
         public bool VerifyClient (UUID sessionID, string token)

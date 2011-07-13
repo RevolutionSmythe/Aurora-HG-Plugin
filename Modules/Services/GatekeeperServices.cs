@@ -353,7 +353,9 @@ namespace Aurora.Addon.Hypergrid
             string addressee = parts[0].TrimEnd (trailing_slash);
             string externalname = m_ExternalName.TrimEnd (trailing_slash);
             m_log.DebugFormat ("[GATEKEEPER SERVICE]: Verifying {0} against {1}", addressee, externalname);
-
+            Uri m_Uri = new Uri (addressee);
+            IPAddress ip = Util.GetHostFromDNS (m_Uri.Host);
+            addressee = addressee.Replace (m_Uri.Host, ip.ToString ());
             return string.Equals (addressee, externalname, StringComparison.OrdinalIgnoreCase);
         }
 

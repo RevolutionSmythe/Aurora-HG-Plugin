@@ -154,7 +154,8 @@ namespace Aurora.Addon.Hypergrid
                 return connector.GetCached (assetID);
             }
             AssetBase asset = base.GetCached (id);
-            AdjustIdentifiers (asset.Metadata);
+            if(asset != null)
+                AdjustIdentifiers (asset.Metadata);
             return asset;
         }
 

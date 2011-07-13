@@ -106,22 +106,26 @@ namespace Aurora.Addon.Hypergrid
                     commsService.GetUrlsForUser (neighbor, circuitData.AgentID);//Make sure that we make userURLs if we need to
 
                 circuitData.CapsPath = CapsUtil.GetCapsPathFromCapsSeed (otherRegionService.CapsUrl);
-                circuitData.firstname = clientCaps.AccountInfo.FirstName;
-                circuitData.lastname = clientCaps.AccountInfo.LastName;
+                if (clientCaps.AccountInfo != null)
+                {
+                    circuitData.firstname = clientCaps.AccountInfo.FirstName;
+                    circuitData.lastname = clientCaps.AccountInfo.LastName;
+                }
                 bool regionAccepted = false;
                 if ((originalDest.Flags & (int)Aurora.Framework.RegionFlags.Hyperlink) == (int)Aurora.Framework.RegionFlags.Hyperlink)
                 {
-                    if (circuitData.ServiceURLs == null)
+                    if (circuitData.ServiceURLs == null || circuitData.ServiceURLs.Count == 0)
+                    {
                         circuitData.ServiceURLs = new Dictionary<string, object> ();
-                    GatekeeperServiceInConnector gateKeeper = m_registry.RequestModuleInterface<GatekeeperServiceInConnector>();
-                    circuitData.ServiceURLs["HomeURI"] = GetHandlers.GATEKEEPER_URL;
-                    circuitData.ServiceURLs["GatekeeperURI"] = GetHandlers.GATEKEEPER_URL;
-                    circuitData.ServiceURLs["InventoryServerURI"] = GetHandlers.GATEKEEPER_URL;
-                    circuitData.ServiceURLs["AssetServerURI"] = GetHandlers.GATEKEEPER_URL;
-                    circuitData.ServiceURLs["ProfileServerURI"] = GetHandlers.GATEKEEPER_URL;
-                    circuitData.ServiceURLs["FriendsServerURI"] = GetHandlers.GATEKEEPER_URL;
-                    circuitData.ServiceURLs["IMServerURI"] = GetHandlers.GATEKEEPER_URL;
-                    string userAgentDriver = GetHandlers.GATEKEEPER_URL;
+                        circuitData.ServiceURLs["HomeURI"] = GetHandlers.GATEKEEPER_URL;
+                        circuitData.ServiceURLs["GatekeeperURI"] = GetHandlers.GATEKEEPER_URL;
+                        circuitData.ServiceURLs["InventoryServerURI"] = GetHandlers.GATEKEEPER_URL;
+                        circuitData.ServiceURLs["AssetServerURI"] = GetHandlers.GATEKEEPER_URL;
+                        circuitData.ServiceURLs["ProfileServerURI"] = GetHandlers.GATEKEEPER_URL;
+                        circuitData.ServiceURLs["FriendsServerURI"] = GetHandlers.GATEKEEPER_URL;
+                        circuitData.ServiceURLs["IMServerURI"] = GetHandlers.GATEKEEPER_URL;
+                    }
+                    string userAgentDriver = circuitData.ServiceURLs["HomeURI"].ToString ();
                     IUserAgentService connector = new UserAgentServiceConnector (userAgentDriver);
                     regionAccepted = connector.LoginAgentToGrid (circuitData, originalDest, neighbor, out reason);
                 }

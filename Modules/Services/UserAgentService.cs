@@ -109,6 +109,32 @@ namespace Aurora.Addon.Hypergrid
         public void FinishedStartup ()
         {
         }
+
+        public GridRegion GetHomeRegion (AgentCircuitData circuit, out Vector3 position, out Vector3 lookAt)
+        {
+            if (circuit.ServiceURLs.ContainsKey ("HomeURI"))
+            {
+                IUserAgentService userAgentService = new UserAgentServiceConnector (circuit.ServiceURLs["HomeURI"].ToString ());
+                GridRegion region = userAgentService.GetHomeRegion (circuit, out position, out lookAt);
+                if (region != null)
+                {
+                    Uri uri = null;
+                    if (!circuit.ServiceURLs.ContainsKey ("HomeURI") ||
+                        (circuit.ServiceURLs.ContainsKey ("HomeURI") && !Uri.TryCreate (circuit.ServiceURLs["HomeURI"].ToString (), UriKind.Absolute, out uri)))
+                        return null;
+
+                    region.ExternalHostName = uri.Host;
+                    region.HttpPort = (uint)uri.Port;
+                    region.ServerURI = "http://" + region.ExternalHostName + ":" + region.HttpPort;
+                    region.RegionName = string.Empty;
+                    region.InternalEndPoint = new System.Net.IPEndPoint (System.Net.IPAddress.Parse ("0.0.0.0"), (int)0);
+                    bool isComingHome = userAgentService.AgentIsComingHome (circuit.SessionID, m_GridName);
+                    return region;
+                }
+            }
+            return GetHomeRegion (circuit.AgentID, out position, out lookAt);
+        }
+
         public GridRegion GetHomeRegion (UUID userID, out Vector3 position, out Vector3 lookAt)
         {
             position = new Vector3 (128, 128, 0);
@@ -317,6 +343,19 @@ namespace Aurora.Addon.Hypergrid
             m_log.DebugFormat ("[USER AGENT SERVICE]: Token verification for session {0}: no such session", sessionID);
 
             return false;
+        }
+
+        public bool VerifyAgent (AgentCircuitData circuit)
+        {
+            if (circuit.ServiceURLs.ContainsKey ("HomeURI"))
+            {
+                string url = circuit.ServiceURLs["HomeURI"].ToString ();
+                UserAgentServiceConnector security = new UserAgentServiceConnector (url);
+                return security.VerifyAgent (circuit.SessionID, circuit.ServiceSessionID);
+            }
+            else
+                m_log.DebugFormat ("[HG ENTITY TRANSFER MODULE]: Agent {0} {1} does not have a HomeURI OH NO!", circuit.firstname, circuit.lastname);
+            return VerifyAgent (circuit.SessionID, circuit.ServiceSessionID);
         }
 
         public List<UUID> StatusNotification (List<string> friends, UUID foreignUserID, bool online)

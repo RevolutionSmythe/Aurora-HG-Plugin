@@ -111,7 +111,7 @@ namespace Aurora.Addon.Hypergrid
 
         public void AddRegion (Scene scene)
         {
-            IConfig hgConfig = config.Configs["HyperGrid"];
+            IConfig hgConfig = scene.Config.Configs["HyperGrid"];
             if (hgConfig == null || !hgConfig.GetBoolean ("Enabled", false))
                 return;
 

@@ -62,11 +62,25 @@ namespace Aurora.Addon.Hypergrid
             HypergridLinker linker = m_registryCore.RequestModuleInterface<HypergridLinker> ();
             if (list.Count == 0)
             {
-                GridRegion r = linker.LinkRegion (scopeID, name);
-                if (r != null)
-                    list.Add (r);
+                if (IsHGURL (name))
+                {
+                    GridRegion r = linker.LinkRegion (scopeID, name);
+                    if (r != null)
+                        list.Add (r);
+                }
             }
             return list;
+        }
+
+        private bool IsHGURL (string name)
+        {
+            string[] split = name.Split (':');
+            if (split.Length < 2)
+                return false;
+            uint port;
+            if (split[0].StartsWith ("http") && uint.TryParse (split[1], out port))
+                return true;
+            return false;
         }
 
         #endregion

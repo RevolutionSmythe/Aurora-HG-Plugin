@@ -83,9 +83,7 @@ namespace Aurora.Addon.Hypergrid
         {
             AssetServiceConnector assetHandler = m_registry.RequestModuleInterface<AssetServiceConnector> ();
             if (assetHandler != null)//Add the external handler
-            {
                 assetHandler.AddExistingUrlForClient ("", "/assets", 0);
-            }
         }
 
         #region IAssetService overrides

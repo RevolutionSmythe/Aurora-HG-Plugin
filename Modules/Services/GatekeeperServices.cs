@@ -76,6 +76,9 @@ namespace Aurora.Addon.Hypergrid
             
             IHttpServer server = registry.RequestModuleInterface<ISimulationBase> ().GetHttpServer (0);
             m_ExternalName = server.HostName + ":" + server.Port + "/";
+            Uri m_Uri = new Uri (m_ExternalName);
+            IPAddress ip = Util.GetHostFromDNS (m_Uri.Host);
+            m_ExternalName = m_ExternalName.Replace (m_Uri.Host, ip.ToString ());
             registry.RegisterModuleInterface<IGatekeeperService> (this);
         }
 
@@ -251,7 +254,7 @@ namespace Aurora.Addon.Hypergrid
             // Login the presence, if it's not there yet (by the login service)
             //
             UserInfo presence = m_PresenceService.GetUserInfo (aCircuit.AgentID.ToString());
-            if (presence.IsOnline) // it has been placed there by the login service
+            if (presence != null && presence.IsOnline) // it has been placed there by the login service
                 isFirstLogin = true;
             else
                 m_PresenceService.SetLoggedIn (aCircuit.AgentID.ToString (), true, true, UUID.Zero);

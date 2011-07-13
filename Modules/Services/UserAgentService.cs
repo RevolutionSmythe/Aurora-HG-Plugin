@@ -96,15 +96,13 @@ namespace Aurora.Addon.Hypergrid
             m_FriendsService = registry.RequestModuleInterface<IFriendsService> ();
             m_PresenceService = registry.RequestModuleInterface<IAgentInfoService> ();
             m_UserAccountService = registry.RequestModuleInterface<IUserAccountService> ();
+            m_BypassClientVerification = serverConfig.GetBoolean ("BypassClientVerification", false);
 
             m_GridName = serverConfig.GetString ("ExternalName", string.Empty);
             if (m_GridName == string.Empty)
             {
-                serverConfig = config.Configs["GatekeeperService"];
-                uint port = serverConfig.GetUInt ("GatekeeperServicePort", 8003);
-
-                IHttpServer server = registry.RequestModuleInterface<ISimulationBase> ().GetHttpServer (port);
-                m_GridName = server.HostName + ":" + port + "/";
+                IHttpServer server = registry.RequestModuleInterface<ISimulationBase> ().GetHttpServer (0);
+                m_GridName = server.HostName + ":" + server.Port + "/";
             }
         }
 

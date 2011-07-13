@@ -83,22 +83,30 @@ namespace Aurora.Addon.Hypergrid
             return new List<InventoryFolderBase> ();
         }
 
-        // NO MY SUITCASE FOLDER EVER
-        /*public override InventoryFolderBase GetRootFolder (UUID principalID)
+        public override bool AddItem (InventoryItemBase item)
+        {
+            //            m_log.DebugFormat(
+            //                "[XINVENTORY SERVICE]: Adding item {0} to folder {1} for {2}", item.ID, item.Folder, item.Owner);
+
+            item.Folder = GetRootFolder (item.Owner).ID;//All items into the foreign folder please!
+            m_Database.IncrementFolder (item.Folder);
+            return m_Database.StoreItem (item);
+        }
+
+        public override InventoryFolderBase GetRootFolder (UUID principalID)
         {
             //m_log.DebugFormat("[HG INVENTORY SERVICE]: GetRootFolder for {0}", principalID);
             // Warp! Root folder for travelers
             List<InventoryFolderBase> folders = m_Database.GetFolders (
-                    new string[] { "agentID", "folderName" },
-                    new string[] { principalID.ToString (), "My Suitcase" });
-
+                    new string[] { "agentID", "type", "folderName" },
+                    new string[] { principalID.ToString (), ((int)AssetType.LostAndFoundFolder).ToString (), "My Foreign Items" });
             if (folders.Count > 0)
                 return folders[0];
-
+            InventoryFolderBase realRoot = base.GetRootFolder (principalID);
             // make one
-            InventoryFolderBase suitcase = CreateFolder (principalID, UUID.Zero, (int)AssetType.Folder, "My Suitcase");
+            InventoryFolderBase suitcase = CreateFolder (principalID, realRoot.ID, (int)AssetType.LostAndFoundFolder, "My Foreign Items");
             return suitcase;
-        }*/
+        }
 
         //private bool CreateSystemFolders(UUID principalID, XInventoryFolder suitcase)
         //{
@@ -131,10 +139,10 @@ namespace Aurora.Addon.Hypergrid
             return false;
         }
 
-        //public override InventoryFolderBase GetFolderForType (UUID principalID, InventoryType invType, AssetType type)
-        //{
-        //    return GetRootFolder (principalID);
-        //}
+        public override InventoryFolderBase GetFolderForType (UUID principalID, InventoryType invType, AssetType type)
+        {
+            return GetRootFolder (principalID);
+        }
 
         //
         // Use the inherited methods

@@ -68,6 +68,9 @@ namespace Aurora.Addon.Hypergrid
                 if ((neighbor.Flags & (int)Aurora.Framework.RegionFlags.Hyperlink) == (int)Aurora.Framework.RegionFlags.Hyperlink)
                 {
                     neighbor = GetFinalDestination (neighbor);
+                    //Remove any offenders
+                    clientCaps.RemoveCAPS (originalDest.RegionHandle);
+                    clientCaps.RemoveCAPS (neighbor.RegionHandle);
                 }
 
                 IRegionClientCapsService oldRegionService = clientCaps.GetCapsService (neighbor.RegionHandle);

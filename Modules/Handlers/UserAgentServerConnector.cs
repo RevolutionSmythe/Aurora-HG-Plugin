@@ -82,8 +82,7 @@ namespace Aurora.Addon.Hypergrid
             m_AuthorizedCallers = csv.Split (',');
 
             gridConfig = config.Configs["UserAgentService"];
-            uint port = gridConfig.GetUInt ("GatekeeperServicePort", 8003);
-            IHttpServer server = registry.RequestModuleInterface<ISimulationBase> ().GetHttpServer (port);
+            IHttpServer server = registry.RequestModuleInterface<ISimulationBase> ().GetHttpServer (0);
 
             server.AddXmlRPCHandler ("agent_is_coming_home", AgentIsComingHome, false);
             server.AddXmlRPCHandler ("get_home_region", GetHomeRegion, false);

@@ -188,7 +188,7 @@ namespace Aurora.Addon.Hypergrid
 
             if (!success)
             {
-                m_log.DebugFormat ("[USER AGENT SERVICE]: Unable to login user {0} to grid {2}, reason: {3}",
+                m_log.DebugFormat ("[USER AGENT SERVICE]: Unable to login user {0} to grid {1}, reason: {2}",
                     agentCircuit.AgentID, region.ServerURI, reason);
 
                 // restore the old travel info

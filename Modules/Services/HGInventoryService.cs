@@ -83,7 +83,8 @@ namespace Aurora.Addon.Hypergrid
             return new List<InventoryFolderBase> ();
         }
 
-        public override InventoryFolderBase GetRootFolder (UUID principalID)
+        // NO MY SUITCASE FOLDER EVER
+        /*public override InventoryFolderBase GetRootFolder (UUID principalID)
         {
             //m_log.DebugFormat("[HG INVENTORY SERVICE]: GetRootFolder for {0}", principalID);
             // Warp! Root folder for travelers
@@ -97,7 +98,7 @@ namespace Aurora.Addon.Hypergrid
             // make one
             InventoryFolderBase suitcase = CreateFolder (principalID, UUID.Zero, (int)AssetType.Folder, "My Suitcase");
             return suitcase;
-        }
+        }*/
 
         //private bool CreateSystemFolders(UUID principalID, XInventoryFolder suitcase)
         //{
@@ -130,10 +131,10 @@ namespace Aurora.Addon.Hypergrid
             return false;
         }
 
-        public override InventoryFolderBase GetFolderForType (UUID principalID, InventoryType invType, AssetType type)
-        {
-            return GetRootFolder (principalID);
-        }
+        //public override InventoryFolderBase GetFolderForType (UUID principalID, InventoryType invType, AssetType type)
+        //{
+        //    return GetRootFolder (principalID);
+        //}
 
         //
         // Use the inherited methods

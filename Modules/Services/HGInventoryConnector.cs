@@ -113,11 +113,11 @@ namespace Aurora.Addon.Hypergrid
                 List<UUID> moreLinkedItems = new List<UUID> ();
                 int count = 0;
                 bool addToCount = true;
-                bool isForeign = false;
-                string serverURL = GetIsForeign (AgentID, out isForeign);
+                string invServer = "";
+                bool isForeign = GetHandlers.GetIsForeign (AgentID, "InventoryServerURI", m_registry, out invServer);
                 IDataReader fretVal = null;
                 if (isForeign)
-                    fretVal = GetForeignInventory (AgentID, folder_id, serverURL);
+                    fretVal = GetForeignInventory (AgentID, folder_id, invServer);
                 string query = String.Format("where {0} = '{1}' and {2} = '{3}'", "parentFolderID", folder_id, "avatarID", AgentID);
             redoQuery:
                 using (IDataReader retVal = isForeign ? fretVal : GD.QueryData (query, m_itemsrealm, "*"))
@@ -567,28 +567,6 @@ namespace Aurora.Addon.Hypergrid
                     throw new NotImplementedException ();
                 }
             }
-        }
-
-        private string GetIsForeign (UUID AgentID, out bool isForeign)
-        {
-            isForeign = false;
-            ICapsService caps = m_registry.RequestModuleInterface<ICapsService> ();
-            IClientCapsService clientCaps = caps.GetClientCapsService (AgentID);
-            if (clientCaps == null)
-                return "";
-            IRegionClientCapsService regionClientCaps = clientCaps.GetRootCapsService ();
-            if (regionClientCaps == null)
-                return "";
-            Dictionary<string, object> urls = regionClientCaps.CircuitData.ServiceURLs;
-            if (urls.Count > 0)
-            {
-                if (urls.ContainsKey ("InventoryServerURI"))
-                {
-                    isForeign = true;
-                    return urls["InventoryServerURI"].ToString ();
-                }
-            }
-            return "";
         }
 
         #endregion

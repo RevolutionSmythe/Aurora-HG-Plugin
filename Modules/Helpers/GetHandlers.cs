@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using OpenSim.Framework;
+using OpenMetaverse;
+using OpenSim.Services.Interfaces;
 
 namespace Aurora.Addon.Hypergrid
 {
@@ -10,5 +12,31 @@ namespace Aurora.Addon.Hypergrid
     {
         public static string PROFILE_URL = MainServer.Instance.HostName + ":" + MainServer.Instance.Port + "/profiles";
         public static string GATEKEEPER_URL = MainServer.Instance.HostName + ":" + MainServer.Instance.Port + "/";
+        public static uint IM_PORT = MainServer.Instance.Port;
+        public static string IM_URL = MainServer.Instance.HostName + ":" + IM_PORT + "/";
+
+        public static bool GetIsForeign (string AgentID, string server, IRegistryCore registry, out string serverURL)
+        {
+            return GetIsForeign (UUID.Parse (AgentID), server, registry, out serverURL);
+        }
+
+        public static bool GetIsForeign (UUID AgentID, string server, IRegistryCore registry, out string serverURL)
+        {
+            serverURL = "";
+            ICapsService caps = registry.RequestModuleInterface<ICapsService> ();
+            IClientCapsService clientCaps = caps.GetClientCapsService (AgentID);
+            if (clientCaps == null)
+                return false;
+            IRegionClientCapsService regionClientCaps = clientCaps.GetRootCapsService ();
+            if (regionClientCaps == null)
+                return false;
+            Dictionary<string, object> urls = regionClientCaps.CircuitData.ServiceURLs;
+            if (urls != null && urls.Count > 0)
+            {
+                serverURL = urls[server].ToString ();
+                return true;
+            }
+            return false;
+        }
     }
 }

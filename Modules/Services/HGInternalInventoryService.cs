@@ -82,8 +82,8 @@ namespace Aurora.Addon.Hypergrid
 
         public override bool AddItem (InventoryItemBase item)
         {
-            string invserverURL = "", assetserverURL = "";
-            if (GetIsForeign (item.Owner, out invserverURL, out assetserverURL))
+            string invserverURL = "";
+            if (GetHandlers.GetIsForeign (item.Owner, "InventoryServerURI", m_registry, out invserverURL))
             {
                 XInventoryServicesConnector xinv = new XInventoryServicesConnector (invserverURL + "xinventory");
                 return xinv.AddItem (item);
@@ -93,8 +93,8 @@ namespace Aurora.Addon.Hypergrid
 
         public override bool AddFolder (InventoryFolderBase folder)
         {
-            string invserverURL = "", assetserverURL = "";
-            if (GetIsForeign (folder.Owner, out invserverURL, out assetserverURL))
+            string invserverURL = "";
+            if (GetHandlers.GetIsForeign (folder.Owner, "InventoryServerURI", m_registry, out invserverURL))
             {
                 XInventoryServicesConnector xinv = new XInventoryServicesConnector (invserverURL + "xinventory");
                 return xinv.AddFolder (folder);
@@ -104,8 +104,8 @@ namespace Aurora.Addon.Hypergrid
 
         public override InventoryFolderBase GetFolderForType (UUID principalID, InventoryType invType, AssetType type)
         {
-            string invserverURL = "", assetserverURL = "";
-            if (GetIsForeign (principalID, out invserverURL, out assetserverURL))
+            string invserverURL = "";
+            if (GetHandlers.GetIsForeign (principalID, "InventoryServerURI", m_registry, out invserverURL))
             {
                 XInventoryServicesConnector xinv = new XInventoryServicesConnector (invserverURL + "xinventory");
                 return xinv.GetFolderForType (principalID, invType, type);
@@ -115,8 +115,8 @@ namespace Aurora.Addon.Hypergrid
 
         public override InventoryFolderBase GetRootFolder (UUID principalID)
         {
-            string invserverURL = "", assetserverURL = "";
-            if (GetIsForeign (principalID, out invserverURL, out assetserverURL))
+            string invserverURL = "";
+            if (GetHandlers.GetIsForeign (principalID, "InventoryServerURI", m_registry, out invserverURL))
             {
                 XInventoryServicesConnector xinv = new XInventoryServicesConnector (invserverURL + "xinventory");
                 return xinv.GetRootFolder (principalID);
@@ -126,8 +126,8 @@ namespace Aurora.Addon.Hypergrid
 
         public override InventoryFolderBase GetFolder (InventoryFolderBase folder)
         {
-            string invserverURL = "", assetserverURL = "";
-            if (GetIsForeign (folder.Owner, out invserverURL, out assetserverURL))
+            string invserverURL = "";
+            if (GetHandlers.GetIsForeign (folder.Owner, "InventoryServerURI", m_registry, out invserverURL))
             {
                 XInventoryServicesConnector xinv = new XInventoryServicesConnector (invserverURL + "xinventory");
                 return xinv.GetFolder (folder);
@@ -137,12 +137,15 @@ namespace Aurora.Addon.Hypergrid
 
         public override InventoryItemBase GetItem (InventoryItemBase item)
         {
-            string invserverURL = "", assetserverURL = "";
-            if (GetIsForeign (item.Owner, out invserverURL, out assetserverURL))
+            string invServerURL = "", assetServerURL = "";
+            if (GetHandlers.GetIsForeign (item.Owner, "InventoryServerURI", m_registry, out invServerURL))
             {
-                XInventoryServicesConnector xinv = new XInventoryServicesConnector (invserverURL + "xinventory");
+                XInventoryServicesConnector xinv = new XInventoryServicesConnector (invServerURL + "xinventory");
                 InventoryItemBase it = xinv.GetItem (item);
-                GetAssets (it, assetserverURL + "assets");
+                if (GetHandlers.GetIsForeign (item.Owner, "AssetServerURI", m_registry, out assetServerURL))
+                {
+                    GetAssets (it, assetServerURL + "assets");
+                }
                 return it;
             }
             else
@@ -181,27 +184,5 @@ namespace Aurora.Addon.Hypergrid
             }
             return null;
         }
-
-        private bool GetIsForeign (UUID AgentID, out string invserverURL, out string assetserverURL)
-        {
-            invserverURL = "";
-            assetserverURL = "";
-            ICapsService caps = m_registry.RequestModuleInterface<ICapsService> ();
-            IClientCapsService clientCaps = caps.GetClientCapsService (AgentID);
-            if (clientCaps == null)
-                return false;
-            IRegionClientCapsService regionClientCaps = clientCaps.GetRootCapsService ();
-            if (regionClientCaps == null)
-                return false;
-            Dictionary<string, object> urls = regionClientCaps.CircuitData.ServiceURLs;
-            if (urls.Count > 0)
-            {
-                invserverURL = urls["InventoryServerURI"].ToString ();
-                assetserverURL = urls["AssetServerURI"].ToString ();
-                return true;
-            }
-            return false;
-        }
-
     }
 }

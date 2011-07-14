@@ -130,7 +130,7 @@ namespace Aurora.Addon.Hypergrid
                         circuitData.ServiceURLs["AssetServerURI"] = GetHandlers.GATEKEEPER_URL;
                         circuitData.ServiceURLs["ProfileServerURI"] = GetHandlers.GATEKEEPER_URL;
                         circuitData.ServiceURLs["FriendsServerURI"] = GetHandlers.GATEKEEPER_URL;
-                        circuitData.ServiceURLs["IMServerURI"] = GetHandlers.GATEKEEPER_URL;
+                        circuitData.ServiceURLs["IMServerURI"] = GetHandlers.IM_URL;
                     }
                     string userAgentDriver = circuitData.ServiceURLs["HomeURI"].ToString ();
                     IUserAgentService connector = new UserAgentServiceConnector (userAgentDriver);

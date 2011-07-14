@@ -42,8 +42,11 @@ namespace Aurora.Addon.Hypergrid
 
         public override void FinishedStartup ()
         {
-            base.FinishedStartup ();
-            m_GatekeeperConnector = new GatekeeperServiceConnector (m_registry.RequestModuleInterface<IAssetService>());
+            if (m_registry != null)//Enabled
+            {
+                base.FinishedStartup ();
+                m_GatekeeperConnector = new GatekeeperServiceConnector (m_registry.RequestModuleInterface<IAssetService> ());
+            }
         }
 
         public override bool InformClientOfNeighbor (UUID AgentID, ulong requestingRegion, AgentCircuitData circuitData, ref GridRegion neighbor, uint TeleportFlags, AgentData agentData, out string reason)

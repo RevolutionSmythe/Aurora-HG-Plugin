@@ -47,7 +47,7 @@ namespace Aurora.Addon.Hypergrid
     /// but implements it in ways that are appropriate for inter-grid
     /// asset exchanges.
     /// </summary>
-    public class HGAssetService : OpenSim.Services.AssetService.AssetService, IExternalAssetService
+    public class HGAssetService : AssetService, IExternalAssetService
     {
         private static readonly ILog m_log =
             LogManager.GetLogger (
@@ -88,6 +88,8 @@ namespace Aurora.Addon.Hypergrid
 
         public override void FinishedStartup ()
         {
+            if (m_registry == null)
+                return;
             AssetServiceConnector assetHandler = m_registry.RequestModuleInterface<AssetServiceConnector> ();
             if (assetHandler != null)//Add the external handler
                 assetHandler.AddExistingUrlForClient ("", "/assets", 0);
@@ -150,9 +152,10 @@ namespace Aurora.Addon.Hypergrid
 
         protected override void FixAssetID (ref AssetBase asset)
         {
-            if (asset == null || asset.ID.StartsWith("http"))//Don't reappend
+            if (asset == null || asset.Metadata.URL != "")//Don't reappend
                 return;
-            asset.ID = MainServer.Instance.HostName + ":" + MainServer.Instance.Port + "/assets/" + asset.ID;
+            asset.Metadata.URL = MainServer.Instance.HostName + ":" + MainServer.Instance.Port + "/assets/" + asset.ID;
+            //asset.ID = MainServer.Instance.HostName + ":" + MainServer.Instance.Port + "/assets/" + asset.ID;
         }
 
         protected void AdjustIdentifiers (AssetMetadata meta)

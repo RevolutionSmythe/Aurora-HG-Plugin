@@ -1,0 +1,207 @@
+﻿/*
+ * Copyright (c) Contributors, http://opensimulator.org/
+ * See CONTRIBUTORS.TXT for a full list of copyright holders.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *     * Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer in the
+ *       documentation and/or other materials provided with the distribution.
+ *     * Neither the name of the OpenSimulator Project nor the
+ *       names of its contributors may be used to endorse or promote products
+ *       derived from this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE CONTRIBUTORS BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+using System;
+using System.Collections.Generic;
+using OpenMetaverse;
+using log4net;
+using Nini.Config;
+using System.Reflection;
+using OpenSim.Services.Interfaces;
+using OpenSim.Services.InventoryService;
+using OpenSim.Framework;
+using OpenSim.Services;
+using OpenSim.Services.Connectors;
+
+namespace Aurora.Addon.Hypergrid
+{
+    /// <summary>
+    /// Hypergrid inventory service. It serves the IInventoryService interface,
+    /// but implements it in ways that are appropriate for inter-grid
+    /// inventory exchanges. Specifically, it does not performs deletions
+    /// and it responds to GetRootFolder requests with the ID of the
+    /// Suitcase folder, not the actual "My Inventory" folder.
+    /// </summary>
+    public class HGInternalInventoryService : InventoryService
+    {
+        private static readonly ILog m_log =
+                LogManager.GetLogger (
+                MethodBase.GetCurrentMethod ().DeclaringType);
+
+        private string m_ProfileServiceURL;
+        private IUserAccountService m_UserAccountService;
+        private IRegistryCore m_registry;
+
+        public override void Initialize (IConfigSource config, IRegistryCore registry)
+        {
+            IConfig hgConfig = config.Configs["HyperGrid"];
+            if (hgConfig == null || !hgConfig.GetBoolean ("Enabled", false))
+                return;
+
+            IConfig handlerConfig = config.Configs["Handlers"];
+            if (handlerConfig.GetString ("InventoryHandler", "") != Name)
+                return;
+
+            m_registry = registry;
+            m_UserAccountService = registry.RequestModuleInterface<IUserAccountService> ();
+            m_ProfileServiceURL = GetHandlers.PROFILE_URL;
+
+            registry.RegisterModuleInterface<IInventoryService> (this);
+        }
+
+        public override void FinishedStartup ()
+        {
+            if (m_registry == null)//Not initialized
+                return;
+            base.FinishedStartup ();
+        }
+
+        public override bool AddItem (InventoryItemBase item)
+        {
+            string invserverURL = "", assetserverURL = "";
+            if (GetIsForeign (item.Owner, out invserverURL, out assetserverURL))
+            {
+                XInventoryServicesConnector xinv = new XInventoryServicesConnector (invserverURL + "xinventory");
+                return xinv.AddItem (item);
+            }
+            return base.AddItem (item);
+        }
+
+        public override bool AddFolder (InventoryFolderBase folder)
+        {
+            string invserverURL = "", assetserverURL = "";
+            if (GetIsForeign (folder.Owner, out invserverURL, out assetserverURL))
+            {
+                XInventoryServicesConnector xinv = new XInventoryServicesConnector (invserverURL + "xinventory");
+                return xinv.AddFolder (folder);
+            }
+            return base.AddFolder (folder);
+        }
+
+        public override InventoryFolderBase GetFolderForType (UUID principalID, InventoryType invType, AssetType type)
+        {
+            string invserverURL = "", assetserverURL = "";
+            if (GetIsForeign (principalID, out invserverURL, out assetserverURL))
+            {
+                XInventoryServicesConnector xinv = new XInventoryServicesConnector (invserverURL + "xinventory");
+                return xinv.GetFolderForType (principalID, invType, type);
+            }
+            return base.GetFolderForType (principalID, invType, type);
+        }
+
+        public override InventoryFolderBase GetRootFolder (UUID principalID)
+        {
+            string invserverURL = "", assetserverURL = "";
+            if (GetIsForeign (principalID, out invserverURL, out assetserverURL))
+            {
+                XInventoryServicesConnector xinv = new XInventoryServicesConnector (invserverURL + "xinventory");
+                return xinv.GetRootFolder (principalID);
+            }
+            return base.GetRootFolder (principalID);
+        }
+
+        public override InventoryFolderBase GetFolder (InventoryFolderBase folder)
+        {
+            string invserverURL = "", assetserverURL = "";
+            if (GetIsForeign (folder.Owner, out invserverURL, out assetserverURL))
+            {
+                XInventoryServicesConnector xinv = new XInventoryServicesConnector (invserverURL + "xinventory");
+                return xinv.GetFolder (folder);
+            }
+            return base.GetFolder (folder);
+        }
+
+        public override InventoryItemBase GetItem (InventoryItemBase item)
+        {
+            string invserverURL = "", assetserverURL = "";
+            if (GetIsForeign (item.Owner, out invserverURL, out assetserverURL))
+            {
+                XInventoryServicesConnector xinv = new XInventoryServicesConnector (invserverURL + "xinventory");
+                InventoryItemBase it = xinv.GetItem (item);
+                GetAssets (it, assetserverURL + "assets");
+                return it;
+            }
+            else
+            {
+                InventoryItemBase it = base.GetItem (item);
+
+                //UserAccount user = m_UserAccountService.GetUserAccount (UUID.Zero, UUID.Parse(it.CreatorId));
+
+                // Adjust the creator data
+                //if (user != null && it != null && (it.CreatorData == null || it.CreatorData == string.Empty))
+                //    it.CreatorData = m_ProfileServiceURL + "/" + it.CreatorId + ";" + user.FirstName + " " + user.LastName;
+
+                return it;
+            }
+        }
+
+        private void GetAssets (InventoryItemBase it, string assetServer)
+        {
+            Dictionary<UUID, AssetType> ids = new Dictionary<UUID, AssetType> ();
+            OpenSim.Region.Framework.Scenes.UuidGatherer uuidg = new OpenSim.Region.Framework.Scenes.UuidGatherer (m_registry.RequestModuleInterface<IAssetService> ());
+            uuidg.GatherAssetUuids (it.AssetID, (AssetType)it.AssetType, ids, m_registry);
+            //if (ids.ContainsKey (it.AssetID))
+            //    ids.Remove (it.AssetID);
+            foreach (UUID uuid in ids.Keys)
+                FetchAsset (assetServer, uuid);
+        }
+
+        public AssetBase FetchAsset (string url, UUID assetID)
+        {
+            AssetBase asset = m_registry.RequestModuleInterface<IAssetService>().Get (url + "/" + assetID.ToString ());
+            if (asset != null)
+            {
+                m_registry.RequestModuleInterface<IAssetService> ().Store (asset);
+                m_log.DebugFormat ("[HG ASSET MAPPER]: Copied asset {0} from {1} to local asset server. ", asset.ID, url);
+                return asset;
+            }
+            return null;
+        }
+
+        private bool GetIsForeign (UUID AgentID, out string invserverURL, out string assetserverURL)
+        {
+            invserverURL = "";
+            assetserverURL = "";
+            ICapsService caps = m_registry.RequestModuleInterface<ICapsService> ();
+            IClientCapsService clientCaps = caps.GetClientCapsService (AgentID);
+            if (clientCaps == null)
+                return false;
+            IRegionClientCapsService regionClientCaps = clientCaps.GetRootCapsService ();
+            if (regionClientCaps == null)
+                return false;
+            Dictionary<string, object> urls = regionClientCaps.CircuitData.ServiceURLs;
+            if (urls.Count > 0)
+            {
+                invserverURL = urls["InventoryServerURI"].ToString ();
+                assetserverURL = urls["AssetServerURI"].ToString ();
+                return true;
+            }
+            return false;
+        }
+
+    }
+}

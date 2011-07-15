@@ -67,15 +67,6 @@ namespace Aurora.Addon.Hypergrid
             }
         }
 
-        public string Name
-        {
-            get { return "IInventoryData"; }
-        }
-
-        public void Dispose()
-        {
-        }
-
         public void AddInvHooks (IRegistryCore reg)
         {
             m_registry = reg;
@@ -519,9 +510,12 @@ namespace Aurora.Addon.Hypergrid
                             
                         case "inventoryCurrentPermissions":
                             return item.CurrentPermissions;
-                            
+
                         case "creatorID":
                             return item.CreatorId;
+
+                        case "creatorData":
+                            return item.CreatorData;
                             
                         case "inventoryBasePermissions":
                             return item.BasePermissions;

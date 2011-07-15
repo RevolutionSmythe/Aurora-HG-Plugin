@@ -10,6 +10,15 @@ namespace Aurora.Addon.Hypergrid
 {
     public class GetHandlers
     {
+        public static string Helpers_HomeURI = "HomeURI";
+        public static string Helpers_GatekeeperURI = "GatekeeperURI";
+        public static string Helpers_InventoryServerURI = "InventoryServerURI";
+        public static string Helpers_AssetServerURI = "AssetServerURI";
+        public static string Helpers_ProfileServerURI = "ProfileServerURI";
+        public static string Helpers_FriendsServerURI = "FriendsServerURI";
+        public static string Helpers_IMServerURI = "IMServerURI";
+
+
         public static string PROFILE_URL = MainServer.Instance.HostName + ":" + MainServer.Instance.Port + "/profiles";
         public static string GATEKEEPER_URL = MainServer.Instance.HostName + ":" + MainServer.Instance.Port + "/";
         public static uint IM_PORT = MainServer.Instance.Port;

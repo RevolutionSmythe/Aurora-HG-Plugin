@@ -60,16 +60,13 @@ namespace Aurora.Addon.Hypergrid
         // This will need to go into a DB table
         static Dictionary<UUID, TravelingAgentInfo> m_TravelingAgents = new Dictionary<UUID, TravelingAgentInfo> ();
 
-        static bool m_Initialized = false;
-
         protected static IGridService m_GridService;
+        protected static IAsyncMessagePostService m_asyncPostService;
         protected static GatekeeperServiceConnector m_GatekeeperConnector;
         protected static IGatekeeperService m_GatekeeperService;
         protected static IFriendsService m_FriendsService;
         protected static IAgentInfoService m_PresenceService;
         protected static IUserAccountService m_UserAccountService;
-        protected static IFriendsSimConnector m_FriendsLocalSimConnector; // standalone, points to HGFriendsModule
-        //protected static FriendsSimConnector m_FriendsSimConnector; // grid
 
         protected static string m_GridName;
 
@@ -99,6 +96,7 @@ namespace Aurora.Addon.Hypergrid
                 throw new Exception (String.Format ("No section UserAgentService in config file"));
 
             m_GridService = registry.RequestModuleInterface<IGridService> ();
+            m_asyncPostService = registry.RequestModuleInterface<IAsyncMessagePostService> ();
             m_GatekeeperConnector = new GatekeeperServiceConnector (registry.RequestModuleInterface<IAssetService>());
             m_GatekeeperService = registry.RequestModuleInterface<IGatekeeperService> ();
             m_FriendsService = registry.RequestModuleInterface<IFriendsService> ();
@@ -315,7 +313,7 @@ namespace Aurora.Addon.Hypergrid
 
             TravelingAgentInfo travel = m_TravelingAgents[sessionID];
 
-            return travel.GridExternalName.ToLower () == thisGridExternalName.ToLower ();
+            return Util.GetHostFromDNS(travel.GridExternalName).ToString().ToLower () == Util.GetHostFromDNS(thisGridExternalName).ToString().ToLower ();
         }
 
         public bool VerifyClient (UUID sessionID, string reportedIP)
@@ -366,6 +364,18 @@ namespace Aurora.Addon.Hypergrid
             return VerifyAgent (circuit.SessionID, circuit.ServiceSessionID);
         }
 
+        public bool RemoteStatusNotification (FriendInfo friend, UUID userID, bool online)
+        {
+            string url, first, last, secret;
+            UUID FriendToInform;
+            HGUtil.ParseUniversalUserIdentifier (friend.Friend, out FriendToInform, out url, out first, out last, out secret);
+
+            UserAgentServiceConnector connector = new UserAgentServiceConnector (url);
+            List<UUID> informedFriends = connector.StatusNotification (new List<string> (new string[1] { FriendToInform.ToString () }),
+                userID, online);
+            return informedFriends.Count > 0;
+        }
+
         public List<UUID> StatusNotification (List<string> friends, UUID foreignUserID, bool online)
         {
             if (m_FriendsService == null || m_PresenceService == null)
@@ -380,12 +390,12 @@ namespace Aurora.Addon.Hypergrid
 
             // First, let's double check that the reported friends are, indeed, friends of that user
             // And let's check that the secret matches
-            /*List<string> usersToBeNotified = new List<string> ();
+            List<string> usersToBeNotified = new List<string> ();
             foreach (string uui in friends)
             {
                 UUID localUserID;
                 string secret = string.Empty, tmp = string.Empty;
-                if (Util.ParseUniversalUserIdentifier (uui, out localUserID, out tmp, out tmp, out tmp, out secret))
+                if (HGUtil.ParseUniversalUserIdentifier (uui, out localUserID, out tmp, out tmp, out tmp, out secret))
                 {
                     FriendInfo[] friendInfos = m_FriendsService.GetFriends (localUserID);
                     foreach (FriendInfo finfo in friendInfos)
@@ -403,25 +413,17 @@ namespace Aurora.Addon.Hypergrid
             m_log.DebugFormat ("[USER AGENT SERVICE]: Status notification: user has {0} local friends", usersToBeNotified.Count);
 
             // First, let's send notifications to local users who are online in the home grid
-            PresenceInfo[] friendSessions = m_PresenceService.GetAgents (usersToBeNotified.ToArray ());
-            if (friendSessions != null && friendSessions.Length > 0)
+
+            //Send "" because if we pass the UUID, it will get the locations for all friends, even on the grid they came from
+            UserInfo[] friendSessions = m_PresenceService.GetUserInfos (usersToBeNotified.ToArray ());
+            foreach (UserInfo friend in friendSessions)
             {
-                PresenceInfo friendSession = null;
-                foreach (PresenceInfo pinfo in friendSessions)
-                    if (pinfo.RegionID != UUID.Zero) // let's guard against traveling agents
-                    {
-                        friendSession = pinfo;
-                        break;
-                    }
-
-                if (friendSession != null)
+                if (friend.IsOnline)
                 {
-                    ForwardStatusNotificationToSim (friendSession.RegionID, foreignUserID, friendSession.UserID, online);
-                    usersToBeNotified.Remove (friendSession.UserID.ToString ());
-                    UUID id;
-                    if (UUID.TryParse (friendSession.UserID, out id))
-                        localFriendsOnline.Add (id);
-
+                    GridRegion ourRegion = m_GridService.GetRegionByUUID (UUID.Zero, friend.CurrentRegionID);
+                    if (ourRegion != null)
+                        m_asyncPostService.Post (ourRegion.RegionHandle,
+                            SyncMessageHelper.AgentStatusChange (foreignUserID, UUID.Parse (friend.UserID), true));
                 }
             }
 
@@ -435,7 +437,7 @@ namespace Aurora.Addon.Hypergrid
                     // forward
                     m_log.WarnFormat ("[USER AGENT SERVICE]: User {0} is visiting {1}. HG Status notifications still not implemented.", user, url);
                 }
-            }*/
+            }
 
             // and finally, let's send the online friends
             if (online)
@@ -446,33 +448,11 @@ namespace Aurora.Addon.Hypergrid
                 return new List<UUID> ();
         }
 
-        protected void ForwardStatusNotificationToSim (UUID regionID, UUID foreignUserID, string user, bool online)
-        {
-            /*UUID userID;
-            if (UUID.TryParse (user, out userID))
-            {
-                if (m_FriendsLocalSimConnector != null)
-                {
-                    m_log.DebugFormat ("[USER AGENT SERVICE]: Local Notify, user {0} is {1}", foreignUserID, (online ? "online" : "offline"));
-                    m_FriendsLocalSimConnector.StatusNotify (foreignUserID, userID, online);
-                }
-                else
-                {
-                    GridRegion region = m_GridService.GetRegionByUUID (UUID.Zero, regionID);
-                    if (region != null)
-                    {
-                        m_log.DebugFormat ("[USER AGENT SERVICE]: Remote Notify to region {0}, user {1} is {2}", region.RegionName, foreignUserID, (online ? "online" : "offline"));
-                        m_FriendsSimConnector.StatusNotify (region, foreignUserID, userID, online);
-                    }
-                }
-            }*/
-        }
-
         public List<UUID> GetOnlineFriends (UUID foreignUserID, List<string> friends)
         {
             List<UUID> online = new List<UUID> ();
 
-            /*if (m_FriendsService == null || m_PresenceService == null)
+            if (m_FriendsService == null || m_PresenceService == null)
             {
                 m_log.WarnFormat ("[USER AGENT SERVICE]: Unable to get online friends because friends or presence services are missing");
                 return online;
@@ -487,7 +467,7 @@ namespace Aurora.Addon.Hypergrid
             {
                 UUID localUserID;
                 string secret = string.Empty, tmp = string.Empty;
-                if (Util.ParseUniversalUserIdentifier (uui, out localUserID, out tmp, out tmp, out tmp, out secret))
+                if (HGUtil.ParseUniversalUserIdentifier (uui, out localUserID, out tmp, out tmp, out tmp, out secret))
                 {
                     FriendInfo[] friendInfos = m_FriendsService.GetFriends (localUserID);
                     foreach (FriendInfo finfo in friendInfos)
@@ -506,16 +486,16 @@ namespace Aurora.Addon.Hypergrid
             m_log.DebugFormat ("[USER AGENT SERVICE]: GetOnlineFriends: user has {0} local friends with status rights", usersToBeNotified.Count);
 
             // First, let's send notifications to local users who are online in the home grid
-            PresenceInfo[] friendSessions = m_PresenceService.GetAgents (usersToBeNotified.ToArray ());
+            UserInfo[] friendSessions = m_PresenceService.GetUserInfos (usersToBeNotified.ToArray ());
             if (friendSessions != null && friendSessions.Length > 0)
             {
-                foreach (PresenceInfo pi in friendSessions)
+                foreach (UserInfo pi in friendSessions)
                 {
                     UUID presenceID;
                     if (UUID.TryParse (pi.UserID, out presenceID))
                         online.Add (presenceID);
                 }
-            }*/
+            }
 
             return online;
         }

@@ -53,7 +53,6 @@ namespace Aurora.Addon.Hypergrid
                 MethodBase.GetCurrentMethod ().DeclaringType);
 
         private string m_ProfileServiceURL;
-        private IUserAccountService m_UserAccountService;
         private IRegistryCore m_registry;
 
         public override void Initialize (IConfigSource config, IRegistryCore registry)
@@ -86,7 +85,8 @@ namespace Aurora.Addon.Hypergrid
             if (GetHandlers.GetIsForeign (item.Owner, "InventoryServerURI", m_registry, out invserverURL))
             {
                 XInventoryServicesConnector xinv = new XInventoryServicesConnector (invserverURL + "xinventory");
-                return xinv.AddItem (item);
+                bool success = xinv.AddItem (item);
+                return success;
             }
             return base.AddItem (item);
         }

@@ -46,10 +46,6 @@ namespace Aurora.Addon.Hypergrid
 {
     public class RobustHGridServicesConnector : GridService
     {
-        private static readonly ILog m_log =
-                LogManager.GetLogger(
-                MethodBase.GetCurrentMethod().DeclaringType);
-
         #region IGridService
 
         public override List<GridRegion> GetRegionsByName (UUID scopeID, string name, int maxNumber)

@@ -38,11 +38,12 @@ using OpenSim.Services.Interfaces;
 
 using OpenMetaverse;
 using log4net;
+using Aurora.Simulation.Base;
 using Nini.Config;
 
 namespace Aurora.Addon.Hypergrid
 {
-    struct UserData
+    public struct UserData
     {
         public UUID Id;
         public string FirstName;
@@ -51,24 +52,21 @@ namespace Aurora.Addon.Hypergrid
         public Dictionary<string, object> ServerURLs;
     }
 
-    public interface IUserManagement
-    {
-        string GetUserName(UUID uuid);
-        string GetUserHomeURL(UUID uuid);
-        string GetUserUUI(UUID uuid);
-        string GetUserServerURL(UUID uuid, string serverType);
-        void AddUser(UUID uuid, string userData);
-        void AddUser(UUID uuid, string firstName, string lastName, string profileURL);
-    }
-
-    public class UserManagementModule : ISharedRegionModule, IUserManagement
+    public class UserManagementModule : BaseUserFinding, ISharedRegionModule, IUserManagement
     {
         private static readonly ILog m_log = LogManager.GetLogger (MethodBase.GetCurrentMethod ().DeclaringType);
 
         private List<Scene> m_Scenes = new List<Scene> ();
 
-        // The cache
-        Dictionary<UUID, UserData> m_UserCache = new Dictionary<UUID, UserData> ();
+        protected override IUserAccountService UserAccountService
+        {
+            get
+            {
+                if(m_Scenes.Count > 0)
+                    return m_Scenes[0].RequestModuleInterface<IUserAccountService> ();
+                return null;
+            }
+        }
 
         #region ISharedRegionModule
 
@@ -187,8 +185,40 @@ namespace Aurora.Addon.Hypergrid
             }*/
         }
 
+        private void HandleShowUsers (string[] cmd)
+        {
+            if (m_UserCache.Count == 0)
+            {
+                MainConsole.Instance.Output ("No users not found");
+                return;
+            }
 
-        private string[] GetUserNames (UUID uuid)
+            MainConsole.Instance.Output ("UUID                                 User Name");
+            MainConsole.Instance.Output ("-----------------------------------------------------------------------------");
+            foreach (KeyValuePair<UUID, UserData> kvp in m_UserCache)
+            {
+                MainConsole.Instance.Output (String.Format ("{0} {1} {2}",
+                       kvp.Key, kvp.Value.FirstName, kvp.Value.LastName));
+            }
+            return;
+        }
+    }
+
+    public class BaseUserFinding
+    {
+        /// <summary>
+        /// The cache
+        /// </summary>
+        protected Dictionary<UUID, UserData> m_UserCache = new Dictionary<UUID, UserData> ();
+
+        protected virtual IUserAccountService UserAccountService
+        {
+            get { return null; }
+        }
+
+        #region IUserManagement
+
+        protected string[] GetUserNames (UUID uuid)
         {
             string[] returnstring = new string[2];
 
@@ -199,7 +229,7 @@ namespace Aurora.Addon.Hypergrid
                 return returnstring;
             }
 
-            UserAccount account = m_Scenes[0].UserAccountService.GetUserAccount (UUID.Zero, uuid);
+            UserAccount account = UserAccountService.GetUserAccount (UUID.Zero, uuid);
 
             if (account != null)
             {
@@ -221,8 +251,6 @@ namespace Aurora.Addon.Hypergrid
 
             return returnstring;
         }
-
-        #region IUserManagement
 
         public string GetUserName (UUID uuid)
         {
@@ -269,7 +297,7 @@ namespace Aurora.Addon.Hypergrid
 
         public string GetUserUUI (UUID userID)
         {
-            UserAccount account = m_Scenes[0].UserAccountService.GetUserAccount (m_Scenes[0].RegionInfo.ScopeID, userID);
+            UserAccount account = UserAccountService.GetUserAccount (UUID.Zero, userID);
             if (account != null)
                 return userID.ToString ();
 
@@ -293,16 +321,14 @@ namespace Aurora.Addon.Hypergrid
             return userID.ToString ();
         }
 
-        public void AddUser (UUID id, string creatorData)
+        public void AddUser (UUID uuid, string userData)
         {
-            if (m_UserCache.ContainsKey (id))
+            if (m_UserCache.ContainsKey (uuid))
                 return;
 
             UserData user = new UserData ();
-            user.Id = id;
-
-            UserAccount account = m_Scenes[0].UserAccountService.GetUserAccount (m_Scenes[0].RegionInfo.ScopeID, id);
-
+            user.Id = uuid;
+            UserAccount account = UserAccountService.GetUserAccount (UUID.Zero, uuid);
             if (account != null)
             {
                 user.FirstName = account.FirstName;
@@ -311,39 +337,35 @@ namespace Aurora.Addon.Hypergrid
             }
             else
             {
-                if (creatorData != null && creatorData != string.Empty)
+                if (userData != null && userData != string.Empty)
                 {
-                    //creatorData = <endpoint>;<name>
-
-                    string[] parts = creatorData.Split (';');
+                    bool addOne = false;
+                    string[] parts = userData.Split (';');
                     if (parts.Length >= 1)
                     {
-                        user.HomeURL = parts[0];
+                        UUID sid;
+                        if (UUID.TryParse (parts[0], out sid))
+                            addOne = true;
+                        user.HomeURL = parts[addOne ? 1 : 0];
                         try
                         {
-                            Uri uri = new Uri (parts[0]);
+                            Uri uri = new Uri (parts[addOne ? 1 : 0]);
                             user.LastName = "@" + uri.Authority;
                         }
                         catch (UriFormatException)
                         {
-                            m_log.DebugFormat ("[SCENE]: Unable to parse Uri {0}", parts[0]);
                             user.LastName = "@unknown";
                         }
                     }
                     if (parts.Length >= 2)
-                        user.FirstName = parts[1].Replace (' ', '.');
+                        user.FirstName = parts[addOne ? 2 : 1].Replace (' ', '.');
                 }
                 else
-                {
-                    user.FirstName = "Unknown";
-                    user.LastName = "User";
-                }
+                    return;
             }
 
             lock (m_UserCache)
-                m_UserCache[id] = user;
-
-            m_log.DebugFormat ("[USER MANAGEMENT MODULE]: Added user {0} {1} {2} {3}", user.Id, user.FirstName, user.LastName, user.HomeURL);
+                m_UserCache[uuid] = user;
         }
 
         public void AddUser (UUID uuid, string first, string last, string profileURL)
@@ -351,56 +373,31 @@ namespace Aurora.Addon.Hypergrid
             AddUser (uuid, profileURL + ";" + first + " " + last);
         }
 
-        //public void AddUser(UUID uuid, string userData)
-        //{
-        //    if (m_UserCache.ContainsKey(uuid))
-        //        return;
-
-        //    UserData user = new UserData();
-        //    user.Id = uuid;
-
-        //    // userData = <profile url>;<name>
-        //    string[] parts = userData.Split(';');
-        //    if (parts.Length >= 1)
-        //        user.ProfileURL = parts[0].Trim();
-        //    if (parts.Length >= 2)
-        //    {
-        //        string[] name = parts[1].Trim().Split(' ');
-        //        if (name.Length >= 1)
-        //            user.FirstName = name[0];
-        //        if (name.Length >= 2)
-        //            user.LastName = name[1];
-        //        else
-        //            user.LastName = "?";
-        //    }
-
-        //    lock (m_UserCache)
-        //        m_UserCache.Add(uuid, user);
-
-        //    m_log.DebugFormat("[USER MANAGEMENT MODULE]: Added user {0} {1} {2} {3}", user.Id, user.FirstName, user.LastName, user.ProfileURL);
-
-        //}
-
         #endregion IUserManagement
+    }
 
-        private void HandleShowUsers (string[] cmd)
+    public class HGUserFinder : BaseUserFinding, IService, IUserFinder
+    {
+        protected IRegistryCore m_registry;
+
+        protected override IUserAccountService UserAccountService
         {
-            if (m_UserCache.Count == 0)
-            {
-                MainConsole.Instance.Output ("No users not found");
-                return;
-            }
-
-            MainConsole.Instance.Output ("UUID                                 User Name");
-            MainConsole.Instance.Output ("-----------------------------------------------------------------------------");
-            foreach (KeyValuePair<UUID, UserData> kvp in m_UserCache)
-            {
-                MainConsole.Instance.Output (String.Format ("{0} {1} {2}",
-                       kvp.Key, kvp.Value.FirstName, kvp.Value.LastName));
-            }
-            return;
+            get { return m_registry.RequestModuleInterface<IUserAccountService>(); }
         }
 
+        public void Initialize (IConfigSource config, IRegistryCore registry)
+        {
+            HGUtil.Registry = registry;
+            m_registry = registry;
+            m_registry.RegisterModuleInterface<IUserFinder> (this);
+        }
 
+        public void Start (IConfigSource config, IRegistryCore registry)
+        {
+        }
+
+        public void FinishedStartup ()
+        {
+        }
     }
 }

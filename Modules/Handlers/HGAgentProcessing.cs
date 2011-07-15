@@ -124,15 +124,15 @@ namespace Aurora.Addon.Hypergrid
                     if (circuitData.ServiceURLs == null || circuitData.ServiceURLs.Count == 0)
                     {
                         circuitData.ServiceURLs = new Dictionary<string, object> ();
-                        circuitData.ServiceURLs["HomeURI"] = GetHandlers.GATEKEEPER_URL;
-                        circuitData.ServiceURLs["GatekeeperURI"] = GetHandlers.GATEKEEPER_URL;
-                        circuitData.ServiceURLs["InventoryServerURI"] = GetHandlers.GATEKEEPER_URL;
-                        circuitData.ServiceURLs["AssetServerURI"] = GetHandlers.GATEKEEPER_URL;
-                        circuitData.ServiceURLs["ProfileServerURI"] = GetHandlers.GATEKEEPER_URL;
-                        circuitData.ServiceURLs["FriendsServerURI"] = GetHandlers.GATEKEEPER_URL;
-                        circuitData.ServiceURLs["IMServerURI"] = GetHandlers.IM_URL;
+                        circuitData.ServiceURLs[GetHandlers.Helpers_HomeURI] = GetHandlers.GATEKEEPER_URL;
+                        circuitData.ServiceURLs[GetHandlers.Helpers_GatekeeperURI] = GetHandlers.GATEKEEPER_URL;
+                        circuitData.ServiceURLs[GetHandlers.Helpers_InventoryServerURI] = GetHandlers.GATEKEEPER_URL;
+                        circuitData.ServiceURLs[GetHandlers.Helpers_AssetServerURI] = GetHandlers.GATEKEEPER_URL;
+                        circuitData.ServiceURLs[GetHandlers.Helpers_ProfileServerURI] = GetHandlers.GATEKEEPER_URL;
+                        circuitData.ServiceURLs[GetHandlers.Helpers_FriendsServerURI] = GetHandlers.GATEKEEPER_URL;
+                        circuitData.ServiceURLs[GetHandlers.Helpers_IMServerURI] = GetHandlers.IM_URL;
                     }
-                    string userAgentDriver = circuitData.ServiceURLs["HomeURI"].ToString ();
+                    string userAgentDriver = circuitData.ServiceURLs[GetHandlers.Helpers_HomeURI].ToString ();
                     IUserAgentService connector = new UserAgentServiceConnector (userAgentDriver);
                     regionAccepted = connector.LoginAgentToGrid (circuitData, originalDest, neighbor, out reason);
                 }

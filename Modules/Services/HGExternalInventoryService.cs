@@ -53,7 +53,6 @@ namespace Aurora.Addon.Hypergrid
                 MethodBase.GetCurrentMethod ().DeclaringType);
 
         private string m_ProfileServiceURL;
-        private IUserAccountService m_UserAccountService;
         private IRegistryCore m_registry;
 
         public override void Initialize (IConfigSource config, IRegistryCore registry)

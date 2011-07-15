@@ -51,8 +51,6 @@ namespace Aurora.Addon.Hypergrid
                 LogManager.GetLogger (
                 MethodBase.GetCurrentMethod ().DeclaringType);
 
-        private static bool m_Initialized = false;
-
         private static IGridService m_GridService;
         private static IAgentInfoService m_PresenceService;
         private static IUserAccountService m_UserAccountService;
@@ -62,7 +60,6 @@ namespace Aurora.Addon.Hypergrid
         protected string m_AllowedClients = string.Empty;
         protected string m_DeniedClients = string.Empty;
 
-        private static UUID m_ScopeID;
         private static bool m_AllowTeleportsToAnyRegion;
         private static string m_ExternalName;
         private static GridRegion m_DefaultGatewayRegion;
@@ -111,7 +108,7 @@ namespace Aurora.Addon.Hypergrid
             m_log.DebugFormat ("[GATEKEEPER SERVICE]: Request to link to {0}", (regionName == string.Empty) ? "default region" : regionName);
             if (!m_AllowTeleportsToAnyRegion || regionName == string.Empty)
             {
-                List<GridRegion> defs = m_GridService.GetDefaultRegions (m_ScopeID);
+                List<GridRegion> defs = m_GridService.GetDefaultRegions (UUID.Zero);
                 if (defs != null && defs.Count > 0)
                 {
                     region = defs[0];
@@ -119,7 +116,7 @@ namespace Aurora.Addon.Hypergrid
                 }
                 else
                 {
-                    defs = m_GridService.GetFallbackRegions (m_ScopeID, 0, 0);
+                    defs = m_GridService.GetFallbackRegions (UUID.Zero, 0, 0);
                     if (defs != null && defs.Count > 0)
                     {
                         region = defs[0];
@@ -127,7 +124,7 @@ namespace Aurora.Addon.Hypergrid
                     }
                     else
                     {
-                        defs = m_GridService.GetSafeRegions (m_ScopeID, 0, 0);
+                        defs = m_GridService.GetSafeRegions (UUID.Zero, 0, 0);
                         if (defs != null && defs.Count > 0)
                         {
                             region = defs[0];
@@ -144,7 +141,7 @@ namespace Aurora.Addon.Hypergrid
             }
             else
             {
-                region = m_GridService.GetRegionByName (m_ScopeID, regionName);
+                region = m_GridService.GetRegionByName (UUID.Zero, regionName);
                 if (region == null)
                 {
                     reason = "Region not found";
@@ -170,7 +167,7 @@ namespace Aurora.Addon.Hypergrid
                 // Don't even check the given regionID
                 return m_DefaultGatewayRegion;
 
-            GridRegion region = m_GridService.GetRegionByUUID (m_ScopeID, regionID);
+            GridRegion region = m_GridService.GetRegionByUUID (UUID.Zero, regionID);
             return region;
         }
 
@@ -231,7 +228,7 @@ namespace Aurora.Addon.Hypergrid
             if (m_UserAccountService != null)
             {
                 // Check to see if we have a local user with that UUID
-                account = m_UserAccountService.GetUserAccount (m_ScopeID, aCircuit.AgentID);
+                account = m_UserAccountService.GetUserAccount (UUID.Zero, aCircuit.AgentID);
                 if (account != null)
                 {
                     // Make sure this is the user coming home, and not a foreign user with same UUID as a local user
@@ -261,14 +258,14 @@ namespace Aurora.Addon.Hypergrid
             if (presence != null && presence.IsOnline) // it has been placed there by the login service
                 isFirstLogin = true;
             else
-                m_PresenceService.SetLoggedIn (aCircuit.AgentID.ToString (), true, true, UUID.Zero);
+                m_PresenceService.SetLoggedIn (aCircuit.AgentID.ToString (), true, true, destination.RegionID);
 
             m_log.DebugFormat ("[GATEKEEPER SERVICE]: Login presence ok");
 
             //
             // Get the region
             //
-            destination = m_GridService.GetRegionByUUID (m_ScopeID, destination.RegionID);
+            destination = m_GridService.GetRegionByUUID (UUID.Zero, destination.RegionID);
             if (destination == null)
             {
                 reason = "Destination region not found";

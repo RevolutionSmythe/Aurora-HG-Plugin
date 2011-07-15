@@ -29,23 +29,23 @@ namespace Aurora.Addon.Hypergrid
         public override string[] GetAgentsLocations (string requestor, string[] userIDs)
         {
             List<string> locations = new List<string> ();
-            string imServer;
-            if (GetHandlers.GetIsForeign (requestor, "IMServerURI", m_registry, out imServer))
+            foreach (string userID in userIDs)
             {
-                foreach (string userID in userIDs)
+                string[] l = base.GetAgentsLocations (requestor, new string[1] { userID });
+                if (l[0] == "NotOnline")
                 {
-                    string[] l = base.GetAgentsLocations (requestor, new string[1] { userID });
-                    if (l[0] == "NotOnline")
+                    UserAccount acc = m_registry.RequestModuleInterface<IUserAccountService> ().GetUserAccount (UUID.Zero, UUID.Parse (userID));
+                    if (acc == null)
                     {
-                        UserAccount acc = m_registry.RequestModuleInterface<IUserAccountService> ().GetUserAccount (UUID.Zero, UUID.Parse (userID));
-                        if (acc == null)
-                            l[0] = imServer;//Forward to the IM server of the foreign grid
+                        IUserFinder userFinder = m_registry.RequestModuleInterface<IUserFinder> ();
+                        string url = "";
+                        if (userFinder != null && (url = userFinder.GetUserServerURL (UUID.Parse (userID), GetHandlers.Helpers_IMServerURI)) != "")
+                            l[0] = url;
                     }
-                    locations.Add (l[0]);
                 }
-                return locations.ToArray();
+                locations.Add (l[0]);
             }
-            return base.GetAgentsLocations (requestor, userIDs);
+            return locations.ToArray ();
         }
     }
 }

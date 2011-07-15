@@ -425,6 +425,12 @@ namespace Aurora.Addon.Hypergrid
             GetBoolResponse (request, out reason);
         }
 
+        public bool RemoteStatusNotification (OpenSim.Services.Interfaces.FriendInfo friend, UUID userID, bool online)
+        {
+            //Use status notificaiton
+            return false;
+        }
+
         public List<UUID> StatusNotification (List<string> friends, UUID userID, bool online)
         {
             Hashtable hash = new Hashtable ();

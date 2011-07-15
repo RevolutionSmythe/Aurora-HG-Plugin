@@ -34,11 +34,13 @@
 	<ReferencePath>../../../bin/</ReferencePath>
 	<Reference name="System"/>
 	<Reference name="System.Xml"/>
+	<Reference name="System.Data"/>
 	<Reference name="System.Drawing"/>
 	<Reference name="System.Web"/>
 
 	<Reference name="Aurora.DataManager"/>
 	<Reference name="Aurora.Framework"/>
+	<Reference name="Aurora.Services.DataService"/>
 	<Reference name="Aurora.Simulation.Base"/> 
 	<Reference name="OpenSim.Framework"/>
 	<Reference name="OpenSim.Region.CoreModules"/>

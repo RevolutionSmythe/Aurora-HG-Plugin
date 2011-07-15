@@ -75,6 +75,11 @@ namespace Aurora.Addon.Hypergrid
                 if ((neighbor.Flags & (int)Aurora.Framework.RegionFlags.Hyperlink) == (int)Aurora.Framework.RegionFlags.Hyperlink)
                 {
                     neighbor = GetFinalDestination (neighbor);
+                    if (neighbor == null || neighbor.RegionHandle == 0)
+                    {
+                        reason = "Could not find neighbor to inform";
+                        return false;
+                    }
                     //Remove any offenders
                     clientCaps.RemoveCAPS (originalDest.RegionHandle);
                     clientCaps.RemoveCAPS (neighbor.RegionHandle);

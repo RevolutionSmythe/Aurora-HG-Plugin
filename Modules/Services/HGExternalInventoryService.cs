@@ -52,7 +52,6 @@ namespace Aurora.Addon.Hypergrid
                 LogManager.GetLogger (
                 MethodBase.GetCurrentMethod ().DeclaringType);
 
-        private string m_ProfileServiceURL;
         private IRegistryCore m_registry;
 
         public override void Initialize (IConfigSource config, IRegistryCore registry)
@@ -68,7 +67,6 @@ namespace Aurora.Addon.Hypergrid
             m_registry = registry;
             registry.RegisterModuleInterface<IExternalInventoryService> (this);
             m_UserAccountService = registry.RequestModuleInterface<IUserAccountService> ();
-            m_ProfileServiceURL = GetHandlers.PROFILE_URL;
 
             if (handlerConfig.GetString ("InventoryHandler", "") != Name)
                 return;
@@ -300,11 +298,11 @@ namespace Aurora.Addon.Hypergrid
         {
             InventoryItemBase it = base.GetItem (item);
 
-            //UserAccount user = m_UserAccountService.GetUserAccount (UUID.Zero, UUID.Parse(it.CreatorId));
+            UserAccount user = m_UserAccountService.GetUserAccount (UUID.Zero, UUID.Parse(it.CreatorId));
 
             // Adjust the creator data
-            //if (user != null && it != null && (it.CreatorData == null || it.CreatorData == string.Empty))
-            //    it.CreatorData = m_ProfileServiceURL + "/" + it.CreatorId + ";" + user.FirstName + " " + user.LastName;
+            if (user != null && it != null && (it.CreatorData == null || it.CreatorData == string.Empty))
+                it.CreatorData = GetHandlers.PROFILE_URL + "/" + it.CreatorId + ";" + user.FirstName + " " + user.LastName;
 
             return it;
         }

@@ -142,7 +142,6 @@ namespace Aurora.Addon.Hypergrid
 
         #endregion ISharedRegionModule
 
-
         #region Event Handlers
 
         void EventManager_OnStartupFullyComplete (IScene scene, List<string> data)
@@ -175,14 +174,14 @@ namespace Aurora.Addon.Hypergrid
         private void CacheCreators (SceneObjectGroup sog)
         {
             //m_log.DebugFormat("[USER MANAGEMENT MODULE]: processing {0} {1}; {2}", sog.RootPart.Name, sog.RootPart.CreatorData, sog.RootPart.CreatorIdentification);
-            /*AddUser (sog.RootPart.CreatorID, sog.RootPart.CreatorData);
+            AddUser (sog.RootPart.CreatorID, sog.RootPart.CreatorData);
 
             foreach (SceneObjectPart sop in sog.Parts)
             {
                 AddUser (sop.CreatorID, sop.CreatorData);
                 foreach (TaskInventoryItem item in sop.TaskInventory.Values)
                     AddUser (item.CreatorID, item.CreatorData);
-            }*/
+            }
         }
 
         private void HandleShowUsers (string[] cmd)
@@ -207,9 +206,9 @@ namespace Aurora.Addon.Hypergrid
     public class BaseUserFinding
     {
         /// <summary>
-        /// The cache
+        /// The cache, only one copy!
         /// </summary>
-        protected Dictionary<UUID, UserData> m_UserCache = new Dictionary<UUID, UserData> ();
+        protected static Dictionary<UUID, UserData> m_UserCache = new Dictionary<UUID, UserData> ();
 
         protected virtual IUserAccountService UserAccountService
         {

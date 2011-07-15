@@ -77,7 +77,7 @@ namespace Aurora.Addon.Hypergrid
                     //{
                     //    UserAccount owner = GetUser(node.InnerText);
                     //    if (owner != null)
-                    //        node.InnerText = m_ProfileServiceURL + "/" + node.InnerText + "/" + owner.FirstName + " " + owner.LastName;
+                    //        node.InnerText = profileServiceURL + "/" + node.InnerText + "/" + owner.FirstName + " " + owner.LastName;
                     //}
                 }
                 if (!hasCreatorData && creator != null)

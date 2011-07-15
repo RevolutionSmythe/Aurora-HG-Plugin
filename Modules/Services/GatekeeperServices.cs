@@ -37,6 +37,7 @@ using OpenSim.Services.Interfaces;
 using GridRegion = OpenSim.Services.Interfaces.GridRegion;
 
 using OpenMetaverse;
+using OpenMetaverse.StructuredData;
 
 using Nini.Config;
 using log4net;
@@ -56,6 +57,7 @@ namespace Aurora.Addon.Hypergrid
         private static IUserAccountService m_UserAccountService;
         private static IUserAgentService m_UserAgentService;
         private static ISimulationService m_SimulationService;
+        private static ICapsService m_CapsService;
 
         protected string m_AllowedClients = string.Empty;
         protected string m_DeniedClients = string.Empty;
@@ -85,6 +87,7 @@ namespace Aurora.Addon.Hypergrid
 
         public void Start (IConfigSource config, IRegistryCore registry)
         {
+            m_CapsService = registry.RequestModuleInterface<ICapsService> ();
             m_GridService = registry.RequestModuleInterface<IGridService> ();
             m_PresenceService = registry.RequestModuleInterface<IAgentInfoService>();
             m_UserAccountService = registry.RequestModuleInterface<IUserAccountService>();
@@ -301,7 +304,31 @@ namespace Aurora.Addon.Hypergrid
             //
             TeleportFlags loginFlag = /*isFirstLogin ? */TeleportFlags.ViaLogin/* : TeleportFlags.ViaHGLogin*/;
             m_log.DebugFormat ("[GATEKEEPER SERVICE]: launching agent {0}", loginFlag);
-            return m_SimulationService.CreateAgent (destination, ref aCircuit, (uint)loginFlag, null, out reason);
+            IRegionClientCapsService regionClientCaps = null;
+            if (m_CapsService != null)
+            {
+                //Remove any previous users
+                string ServerCapsBase = OpenSim.Framework.Capabilities.CapsUtil.GetRandomCapsObjectPath ();
+                m_CapsService.CreateCAPS (aCircuit.AgentID, OpenSim.Framework.Capabilities.CapsUtil.GetCapsSeedPath (ServerCapsBase), destination.RegionHandle, true, aCircuit);
+
+                regionClientCaps = m_CapsService.GetClientCapsService (aCircuit.AgentID).GetCapsService (destination.RegionHandle);
+                if (aCircuit.ServiceURLs == null)
+                    aCircuit.ServiceURLs = new Dictionary<string, object> ();
+                aCircuit.ServiceURLs["IncomingCAPSHandler"] = regionClientCaps.CapsUrl;
+            }
+            bool success = m_SimulationService.CreateAgent (destination, ref aCircuit, (uint)loginFlag, null, out reason);
+            if (success)
+            {
+                if(regionClientCaps != null)
+                {
+                    OSDMap responseMap = (OSDMap)OSDParser.DeserializeJson (reason);
+                    OSDMap SimSeedCaps = (OSDMap)responseMap["CapsUrls"];
+                    regionClientCaps.AddCAPS (SimSeedCaps);
+                }
+            }
+            else if(m_CapsService != null)
+                m_CapsService.RemoveCAPS (aCircuit.AgentID);
+            return success;
         }
 
         protected bool Authenticate (AgentCircuitData aCircuit)

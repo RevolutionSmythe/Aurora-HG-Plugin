@@ -70,11 +70,14 @@ namespace Aurora.Addon.Hypergrid
 
         private bool IsHGURL (string name)
         {
+            if (!name.StartsWith ("http://"))
+                return false;
+            name = name.Replace ("http://", "");
             string[] split = name.Split (':');
             if (split.Length < 2)
                 return false;
             uint port;
-            if (split[0].StartsWith ("http") && uint.TryParse (split[1], out port))
+            if (uint.TryParse (split[1], out port))
                 return true;
             return false;
         }

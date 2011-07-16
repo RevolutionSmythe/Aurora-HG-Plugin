@@ -160,9 +160,14 @@ namespace Aurora.Addon.Hypergrid
 
         protected void AdjustIdentifiers (AssetMetadata meta)
         {
-            UserAccount creator = m_UserAccountService.GetUserAccount (UUID.Zero, UUID.Parse(meta.CreatorID));
-            if (creator != null)
-                meta.CreatorID = m_ProfileServiceURL + "/" + meta.CreatorID + ";" + creator.FirstName + " " + creator.LastName;
+            if (meta.CreatorID != null && meta.CreatorID != string.Empty)
+            {
+                UUID uuid = UUID.Zero;
+                UUID.TryParse (meta.CreatorID, out uuid);
+                UserAccount creator = m_UserAccountService.GetUserAccount (UUID.Zero, uuid);
+                if (creator != null)
+                    meta.CreatorID = m_ProfileServiceURL + "/" + meta.CreatorID + ";" + creator.FirstName + " " + creator.LastName;
+            }
         }
 
         protected byte[] AdjustIdentifiers (byte[] data)

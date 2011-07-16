@@ -29,7 +29,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Xml;
@@ -443,8 +442,11 @@ namespace Aurora.Addon.Hypergrid
             {
                 // Check for regions which are not linked regions
                 List<GridRegion> hyperlinks = m_Database.Get (Aurora.Framework.RegionFlags.Hyperlink);
-                IEnumerable<GridRegion> availableRegions = regions.Except (hyperlinks);
-                if (availableRegions.Count () == 0)
+                regions.RemoveAll (delegate (GridRegion r)
+                {
+                    return hyperlinks.Contains(r);
+                });
+                if (regions.Count == 0)
                     return false;
             }
 

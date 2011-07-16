@@ -31,7 +31,6 @@ namespace Aurora.Addon.Hypergrid
             if (agentConfig != null)
             {
                 m_enabled = agentConfig.GetString ("Module", "AgentProcessing") == "HGAgentProcessing";
-                m_useCallbacks = agentConfig.GetBoolean ("UseCallbacks", m_useCallbacks);
                 VariableRegionSight = agentConfig.GetBoolean ("UseVariableRegionSightDistance", VariableRegionSight);
                 MaxVariableRegionSight = agentConfig.GetInt ("MaxDistanceVariableRegionSightDistance", MaxVariableRegionSight);
             }
@@ -48,8 +47,9 @@ namespace Aurora.Addon.Hypergrid
             }
         }
 
-        public override bool InformClientOfNeighbor (UUID AgentID, ulong requestingRegion, AgentCircuitData circuitData, ref GridRegion neighbor, uint TeleportFlags, AgentData agentData, out string reason)
+        public override bool InformClientOfNeighbor (UUID AgentID, ulong requestingRegion, AgentCircuitData circuitData, ref GridRegion neighbor, uint TeleportFlags, AgentData agentData, out string reason, out bool useCallbacks)
         {
+            useCallbacks = true;
             if (neighbor == null)
             {
                 reason = "Could not find neighbor to inform";
@@ -158,17 +158,10 @@ namespace Aurora.Addon.Hypergrid
                     }
                     else
                     {
-                        if (m_useCallbacks)
-                        {
-                            //We failed, give up
-                            m_log.Error ("[AgentProcessing]: Failed to inform client about neighbor " + neighbor.RegionName + ", no response came back");
-                            clientCaps.RemoveCAPS (neighbor.RegionHandle);
-                            oldRegionService = null;
-                            return false;
-                        }
                         //We are assuming an OpenSim region now!
                         #region OpenSim teleport compatibility!
 
+                        useCallbacks = false;
                         otherRegionsCapsURL = "http://" + neighbor.ExternalHostName.ToString () +
                             ":" + neighbor.HttpPort + 
                             CapsUtil.GetCapsSeedPath (circuitData.CapsPath);
@@ -194,7 +187,7 @@ namespace Aurora.Addon.Hypergrid
                         neighbor.RegionSizeY,
                         requestingRegion);
 
-                    if (!m_useCallbacks)
+                    if (!useCallbacks)
                         Thread.Sleep (3000); //Give it a bit of time, only for OpenSim...
 
                     m_log.Info ("[AgentProcessing]: Completed inform client about neighbor " + neighbor.RegionName);

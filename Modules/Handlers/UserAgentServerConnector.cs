@@ -78,6 +78,9 @@ namespace Aurora.Addon.Hypergrid
                 return;
 
             IConfig gridConfig = config.Configs["UserAgentService"];
+            if (gridConfig == null || !gridConfig.GetBoolean ("Enabled", false))
+                return;
+
             bool proxy = gridConfig.GetBoolean ("HasProxy", false);
 
             m_VerifyCallers = gridConfig.GetBoolean ("VerifyCallers", false);
@@ -85,8 +88,7 @@ namespace Aurora.Addon.Hypergrid
             csv = csv.Replace (" ", "");
             m_AuthorizedCallers = csv.Split (',');
 
-            gridConfig = config.Configs["UserAgentService"];
-            IHttpServer server = registry.RequestModuleInterface<ISimulationBase> ().GetHttpServer (0);
+            IHttpServer server = MainServer.Instance;
 
             server.AddXmlRPCHandler ("agent_is_coming_home", AgentIsComingHome, false);
             server.AddXmlRPCHandler ("get_home_region", GetHomeRegion, false);

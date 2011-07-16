@@ -89,11 +89,9 @@ namespace Aurora.Addon.Hypergrid
 
             m_log.DebugFormat ("[HOME USERS SECURITY]: Starting...");
 
-            //m_FriendsSimConnector = new FriendsSimConnector ();
-
             IConfig serverConfig = config.Configs["UserAgentService"];
-            if (serverConfig == null)
-                throw new Exception (String.Format ("No section UserAgentService in config file"));
+            if (serverConfig == null || !serverConfig.GetBoolean ("Enabled", false))
+                return;
 
             m_GridService = registry.RequestModuleInterface<IGridService> ();
             m_asyncPostService = registry.RequestModuleInterface<IAsyncMessagePostService> ();
@@ -107,7 +105,7 @@ namespace Aurora.Addon.Hypergrid
             m_GridName = serverConfig.GetString ("ExternalName", string.Empty);
             if (m_GridName == string.Empty)
             {
-                IHttpServer server = registry.RequestModuleInterface<ISimulationBase> ().GetHttpServer (0);
+                IHttpServer server = MainServer.Instance;
                 m_GridName = server.HostName + ":" + server.Port + "/";
             }
         }

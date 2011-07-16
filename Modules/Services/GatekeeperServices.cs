@@ -73,11 +73,16 @@ namespace Aurora.Addon.Hypergrid
                 return;
 
             IConfig serverConfig = config.Configs["GatekeeperService"];
-
-            if(serverConfig != null)
+            bool enabled = false;
+            if (serverConfig != null)
+            {
                 m_AllowTeleportsToAnyRegion = serverConfig.GetBoolean ("AllowTeleportsToAnyRegion", true);
+                enabled = serverConfig.GetBoolean ("Enabled", enabled);
+            }
+            if (!enabled)
+                return;
             
-            IHttpServer server = registry.RequestModuleInterface<ISimulationBase> ().GetHttpServer (0);
+            IHttpServer server = MainServer.Instance;
             m_ExternalName = server.HostName + ":" + server.Port + "/";
             Uri m_Uri = new Uri (m_ExternalName);
             IPAddress ip = Util.GetHostFromDNS (m_Uri.Host);
@@ -253,13 +258,15 @@ namespace Aurora.Addon.Hypergrid
 
             // May want to authorize
 
-            bool isFirstLogin = false;
+            //bool isFirstLogin = false;
             //
             // Login the presence, if it's not there yet (by the login service)
             //
             UserInfo presence = m_PresenceService.GetUserInfo (aCircuit.AgentID.ToString());
             if (presence != null && presence.IsOnline) // it has been placed there by the login service
-                isFirstLogin = true;
+            {
+            //    isFirstLogin = true;
+            }
             else
                 m_PresenceService.SetLoggedIn (aCircuit.AgentID.ToString (), true, true, destination.RegionID);
 
@@ -316,6 +323,7 @@ namespace Aurora.Addon.Hypergrid
                     aCircuit.ServiceURLs = new Dictionary<string, object> ();
                 aCircuit.ServiceURLs["IncomingCAPSHandler"] = regionClientCaps.CapsUrl;
             }
+            aCircuit.child = false;//FIX THIS, OPENSIM ALWAYS SENDS CHILD!
             bool success = m_SimulationService.CreateAgent (destination, ref aCircuit, (uint)loginFlag, null, out reason);
             if (success)
             {

@@ -57,6 +57,10 @@ namespace Aurora.Addon.Hypergrid
             if (hgConfig == null || !hgConfig.GetBoolean ("Enabled", false))
                 return;
 
+            IConfig friendConfig = config.Configs["HGFriends"];
+            if (friendConfig == null || !friendConfig.GetBoolean ("Enabled", false))
+                return;
+
             MainServer.Instance.AddStreamHandler (new HGFriendsServerPostHandler (registry.RequestModuleInterface<IFriendsService>(),
                 registry.RequestModuleInterface<IUserAgentService>()));
         }

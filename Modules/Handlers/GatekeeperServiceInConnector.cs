@@ -59,10 +59,15 @@ namespace Aurora.Addon.Hypergrid
                 return;
 
             registry.RegisterModuleInterface<GatekeeperServiceInConnector> (this);
+            bool enabled = false;
             IConfig gridConfig = config.Configs["GatekeeperService"];
             if (gridConfig != null)
+            {
                 m_Proxy = gridConfig.GetBoolean ("HasProxy", false);
-
+                enabled = gridConfig.GetBoolean ("Enabled", enabled);
+            }
+            if (!enabled)
+                return;
             IHttpServer server = MainServer.Instance;
             HypergridHandlers hghandlers = new HypergridHandlers (registry.RequestModuleInterface<IGatekeeperService> ());
             server.AddXmlRPCHandler ("link_region", hghandlers.LinkRegionRequest, false);

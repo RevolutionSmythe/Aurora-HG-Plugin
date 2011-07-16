@@ -109,17 +109,17 @@ namespace Aurora.Addon.Hypergrid
             if (hgConfig == null || !hgConfig.GetBoolean ("Enabled", false))
                 return;
 
-            IConfig gridConfig = config.Configs["GridService"];
-            if (gridConfig != null)
-            {
-                m_Check4096 = gridConfig.GetBoolean ("Check4096", true);
-                m_MapTileDirectory = gridConfig.GetString ("MapTileDirectory", "hgmaptiles");
-            }
-            registry.RegisterModuleInterface<HypergridLinker> (this);//Add the interface
-            gridConfig = config.Configs["GatekeeperService"];
-            uint port = gridConfig == null ? 8003 : gridConfig.GetUInt ("GatekeeperServicePort", 8003);
+            m_Check4096 = hgConfig.GetBoolean ("Check4096", true);
+            m_MapTileDirectory = hgConfig.GetString ("MapTileDirectory", "hgmaptiles");
 
-            IHttpServer server = registry.RequestModuleInterface<ISimulationBase> ().GetHttpServer (port);
+            hgConfig = config.Configs["HyperGridLinker"];
+            if (hgConfig == null || !hgConfig.GetBoolean ("Enabled", false))
+                return;
+
+            registry.RegisterModuleInterface<HypergridLinker> (this);//Add the interface
+            hgConfig = config.Configs["GatekeeperService"];
+
+            IHttpServer server = MainServer.Instance;
             m_ThisGatekeeperURI = new Uri (server.HostName + ":" + server.Port);
 
             if (!string.IsNullOrEmpty (m_MapTileDirectory))

@@ -325,8 +325,14 @@ namespace Aurora.Addon.Hypergrid
 
             IConfig imConfig = config.Configs["HyperGridIM"];
             uint port = 8007;
+            bool enabled = false;
             if (imConfig != null)
+            {
+                enabled = imConfig.GetBoolean ("Enabled", enabled);
                 port = imConfig.GetUInt ("Port", port);
+            }
+            if (!enabled)
+                return;
 
             //Add the external handler
             m_registry = registry;

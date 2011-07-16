@@ -35,6 +35,7 @@
 	<Reference name="System"/>
 	<Reference name="System.Xml"/>
 	<Reference name="System.Drawing"/>
+	<Reference name="System.Data"/>
 	<Reference name="System.Web"/>
 
 	<Reference name="Aurora.DataManager"/>

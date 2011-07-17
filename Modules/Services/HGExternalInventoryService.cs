@@ -151,7 +151,69 @@ namespace Aurora.Addon.Hypergrid
 
         public override InventoryFolderBase GetFolderForType (UUID principalID, InventoryType invType, AssetType type)
         {
-            return GetRootFolder (principalID);
+            InventoryFolderBase invFolder = GetRootFolder (principalID);
+            switch (type)
+            {
+                case AssetType.Object:
+                    InventoryFolderBase objFolder = GetFolderType (principalID, invFolder.ID, type);
+                    if (objFolder == null)
+                        objFolder = CreateFolder (principalID, invFolder.ID, (int)AssetType.Object, "Foreign Objects");
+                    return objFolder;
+                case AssetType.LSLText:
+                    InventoryFolderBase lslFolder = GetFolderType (principalID, invFolder.ID, type);
+                    if (lslFolder == null)
+                        lslFolder = CreateFolder (principalID, invFolder.ID, (int)AssetType.LSLText, "Foreign Scripts");
+                    return lslFolder;
+                case AssetType.Notecard:
+                    InventoryFolderBase ncFolder = GetFolderType (principalID, invFolder.ID, type);
+                    if (ncFolder == null)
+                        ncFolder = CreateFolder (principalID, invFolder.ID, (int)AssetType.Notecard, "Foreign Notecards");
+                    return ncFolder;
+                case AssetType.Animation:
+                    InventoryFolderBase aniFolder = GetFolderType (principalID, invFolder.ID, type);
+                    if (aniFolder == null)
+                        aniFolder = CreateFolder (principalID, invFolder.ID, (int)AssetType.Notecard, "Foreign Animiations");
+                    return aniFolder;
+                case AssetType.Bodypart:
+                case AssetType.Clothing:
+                    InventoryFolderBase clothingFolder = GetFolderType (principalID, invFolder.ID, AssetType.Clothing);
+                    if (clothingFolder == null)
+                        clothingFolder = CreateFolder (principalID, invFolder.ID, (int)AssetType.Clothing, "Foreign Clothing");
+                    return clothingFolder;
+                case AssetType.Gesture:
+                    InventoryFolderBase gestureFolder = GetFolderType (principalID, invFolder.ID, type);
+                    if (gestureFolder == null)
+                        gestureFolder = CreateFolder (principalID, invFolder.ID, (int)AssetType.Gesture, "Foreign Gestures");
+                    return gestureFolder;
+                case AssetType.Landmark:
+                    InventoryFolderBase lmFolder = GetFolderType (principalID, invFolder.ID, type);
+                    if (lmFolder == null)
+                        lmFolder = CreateFolder (principalID, invFolder.ID, (int)AssetType.Landmark, "Foreign Landmarks");
+                    return lmFolder;
+                case AssetType.SnapshotFolder:
+                case AssetType.Texture:
+                    InventoryFolderBase textureFolder = GetFolderType (principalID, invFolder.ID, type);
+                    if (textureFolder == null)
+                        textureFolder = CreateFolder (principalID, invFolder.ID, (int)AssetType.Landmark, "Foreign Textures");
+                    return textureFolder;
+                case AssetType.Sound:
+                    InventoryFolderBase soundFolder = GetFolderType (principalID, invFolder.ID, type);
+                    if (soundFolder == null)
+                        soundFolder = CreateFolder (principalID, invFolder.ID, (int)AssetType.Landmark, "Foreign Sounds");
+                    return soundFolder;
+                default:
+                    return invFolder;
+            }
+        }
+
+        private InventoryFolderBase GetFolderType (UUID principalID, UUID parentID, AssetType type)
+        {
+            List<InventoryFolderBase> folders = m_Database.GetFolders (
+                    new string[] { "agentID", "type", "parentFolderID"},
+                    new string[] { principalID.ToString (), ((int)type).ToString (), parentID.ToString()});
+            if (folders.Count > 0)
+                return folders[0];
+            return null;
         }
 
         //

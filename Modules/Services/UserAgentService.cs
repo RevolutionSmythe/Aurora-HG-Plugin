@@ -366,12 +366,14 @@ namespace Aurora.Addon.Hypergrid
         {
             string url, first, last, secret;
             UUID FriendToInform;
-            HGUtil.ParseUniversalUserIdentifier (friend.Friend, out FriendToInform, out url, out first, out last, out secret);
-
-            UserAgentServiceConnector connector = new UserAgentServiceConnector (url);
-            List<UUID> informedFriends = connector.StatusNotification (new List<string> (new string[1] { FriendToInform.ToString () }),
-                userID, online);
-            return informedFriends.Count > 0;
+            if (HGUtil.ParseUniversalUserIdentifier (friend.Friend, out FriendToInform, out url, out first, out last, out secret))
+            {
+                UserAgentServiceConnector connector = new UserAgentServiceConnector (url);
+                List<UUID> informedFriends = connector.StatusNotification (new List<string> (new string[1] { FriendToInform.ToString () }),
+                    userID, online);
+                return informedFriends.Count > 0;
+            }
+            return false;
         }
 
         public List<UUID> StatusNotification (List<string> friends, UUID foreignUserID, bool online)

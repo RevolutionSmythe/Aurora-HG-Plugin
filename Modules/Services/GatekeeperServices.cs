@@ -162,7 +162,7 @@ namespace Aurora.Addon.Hypergrid
 
             string regionimage = "regionImage" + regionID.ToString ();
             regionimage = regionimage.Replace ("-", "");
-            imageURL = region.ServerURI + "index.php?method=" + regionimage;
+            imageURL = region.ServerURI + "/" + "index.php?method=" + regionimage;
 
             return true;
         }

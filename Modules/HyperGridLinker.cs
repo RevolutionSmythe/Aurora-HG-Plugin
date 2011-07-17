@@ -327,7 +327,6 @@ namespace Aurora.Addon.Hypergrid
             string imageURL = string.Empty;
             if (!m_GatekeeperConnector.LinkRegion (regInfo, out regionID, out handle, out externalName, out imageURL, out reason))
                 return false;
-
             if (regionID == UUID.Zero)
             {
                 m_log.Warn ("[HYPERGRID LINKER]: Unable to link region");

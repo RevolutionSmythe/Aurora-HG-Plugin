@@ -127,14 +127,20 @@ namespace Aurora.Addon.Hypergrid
                 {
                     if (circuitData.ServiceURLs == null || circuitData.ServiceURLs.Count == 0)
                     {
-                        circuitData.ServiceURLs = new Dictionary<string, object> ();
-                        circuitData.ServiceURLs[GetHandlers.Helpers_HomeURI] = GetHandlers.GATEKEEPER_URL;
-                        circuitData.ServiceURLs[GetHandlers.Helpers_GatekeeperURI] = GetHandlers.GATEKEEPER_URL;
-                        circuitData.ServiceURLs[GetHandlers.Helpers_InventoryServerURI] = GetHandlers.GATEKEEPER_URL;
-                        circuitData.ServiceURLs[GetHandlers.Helpers_AssetServerURI] = GetHandlers.GATEKEEPER_URL;
-                        circuitData.ServiceURLs[GetHandlers.Helpers_ProfileServerURI] = GetHandlers.GATEKEEPER_URL;
-                        circuitData.ServiceURLs[GetHandlers.Helpers_FriendsServerURI] = GetHandlers.GATEKEEPER_URL;
-                        circuitData.ServiceURLs[GetHandlers.Helpers_IMServerURI] = GetHandlers.IM_URL;
+                        if (clientCaps.AccountInfo != null)
+                        {
+                            circuitData.ServiceURLs = new Dictionary<string, object> ();
+                            circuitData.ServiceURLs[GetHandlers.Helpers_HomeURI] = GetHandlers.GATEKEEPER_URL;
+                            circuitData.ServiceURLs[GetHandlers.Helpers_GatekeeperURI] = GetHandlers.GATEKEEPER_URL;
+                            circuitData.ServiceURLs[GetHandlers.Helpers_InventoryServerURI] = GetHandlers.GATEKEEPER_URL;
+                            circuitData.ServiceURLs[GetHandlers.Helpers_AssetServerURI] = GetHandlers.GATEKEEPER_URL;
+                            circuitData.ServiceURLs[GetHandlers.Helpers_ProfileServerURI] = GetHandlers.GATEKEEPER_URL;
+                            circuitData.ServiceURLs[GetHandlers.Helpers_FriendsServerURI] = GetHandlers.GATEKEEPER_URL;
+                            circuitData.ServiceURLs[GetHandlers.Helpers_IMServerURI] = GetHandlers.IM_URL;
+                            clientCaps.AccountInfo.ServiceURLs = circuitData.ServiceURLs;
+                            //Store the new urls
+                            m_registry.RequestModuleInterface<IUserAccountService> ().StoreUserAccount (clientCaps.AccountInfo);
+                        }
                     }
                     string userAgentDriver = circuitData.ServiceURLs[GetHandlers.Helpers_HomeURI].ToString ();
                     IUserAgentService connector = new UserAgentServiceConnector (userAgentDriver);

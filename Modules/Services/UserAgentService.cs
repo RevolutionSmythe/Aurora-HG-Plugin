@@ -210,8 +210,8 @@ namespace Aurora.Addon.Hypergrid
             {
                 success = m_GatekeeperConnector.CreateAgent (region, agentCircuit, (uint)TeleportFlags.ViaLogin, out myExternalIP, out reason);
                 if (success)
-                    // Report them as nowhere
-                    m_PresenceService.SetLastPosition (agentCircuit.AgentID.ToString (), UUID.Zero, Vector3.Zero, Vector3.Zero);
+                    // Report them as nowhere with the LOGIN_STATUS_LOCKED so that they don't get logged out automatically after an hour of not responding via HG
+                    m_PresenceService.SetLastPosition (agentCircuit.AgentID.ToString (), AgentInfoHelpers.LOGIN_STATUS_LOCKED, Vector3.Zero, Vector3.Zero);
             }
 
             if (!success)

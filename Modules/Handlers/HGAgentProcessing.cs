@@ -211,6 +211,10 @@ namespace Aurora.Addon.Hypergrid
             return false;
         }
 
+        //public override bool LoginAgent (GridRegion region, AgentCircuitData aCircuit, out string reason)
+        //{//This requires a bunch more work...
+        //}
+
         protected GridRegion GetFinalDestination (GridRegion region)
         {
             IGridService GridService = m_registry.RequestModuleInterface<IGridService> ();

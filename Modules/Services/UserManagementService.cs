@@ -156,6 +156,17 @@ namespace Aurora.Addon.Hypergrid
 
         void EventManager_OnNewClient (IClientAPI client)
         {
+            UserData ud = new UserData ();
+            ud.FirstName = client.FirstName;
+            ud.LastName = client.LastName;
+            ud.ServerURLs = client.RequestClientInfo ().ServiceURLs;
+            if (ud.ServerURLs != null && ud.ServerURLs.ContainsKey (GetHandlers.Helpers_HomeURI))
+                ud.HomeURL = ud.ServerURLs[GetHandlers.Helpers_HomeURI].ToString ();
+            else
+                ud.HomeURL = "";
+            if (ud.ServerURLs == null)
+                ud.ServerURLs = new Dictionary<string, object> ();
+            m_UserCache[client.AgentId] = ud;//Cache them
             client.OnNameFromUUIDRequest += new UUIDNameRequest (HandleUUIDNameRequest);
         }
 
@@ -244,8 +255,7 @@ namespace Aurora.Addon.Hypergrid
             }
             else
             {
-                returnstring[0] = "Unknown";
-                returnstring[1] = "User";
+                return new string[0];
             }
 
             return returnstring;

@@ -56,7 +56,7 @@ namespace Aurora.Addon.Hypergrid
     {
         private static readonly ILog m_log = LogManager.GetLogger (MethodBase.GetCurrentMethod ().DeclaringType);
 
-        private List<Scene> m_Scenes = new List<Scene> ();
+        private List<IScene> m_Scenes = new List<IScene> ();
 
         protected override IUserAccountService UserAccountService
         {
@@ -107,7 +107,7 @@ namespace Aurora.Addon.Hypergrid
             }
         }
 
-        public void AddRegion (Scene scene)
+        public void AddRegion (IScene scene)
         {
             IConfig hgConfig = scene.Config.Configs["HyperGrid"];
             if (hgConfig == null || !hgConfig.GetBoolean ("Enabled", false))
@@ -120,13 +120,13 @@ namespace Aurora.Addon.Hypergrid
             scene.EventManager.OnStartupFullyComplete += EventManager_OnStartupFullyComplete;
         }
 
-        public void RemoveRegion (Scene scene)
+        public void RemoveRegion (IScene scene)
         {
             scene.UnregisterModuleInterface<IUserManagement> (this);
             m_Scenes.Remove (scene);
         }
 
-        public void RegionLoaded (Scene s)
+        public void RegionLoaded (IScene s)
         {
         }
 
@@ -148,7 +148,7 @@ namespace Aurora.Addon.Hypergrid
         {
             // let's sniff all the user names referenced by objects in the scene
             m_log.DebugFormat ("[USER MANAGEMENT MODULE]: Caching creators' data from {0} ({1} objects)...", scene.RegionInfo.RegionName, scene.Entities.Count);
-            ((Scene)scene).ForEachSOG (delegate (SceneObjectGroup sog)
+            scene.ForEachSceneEntity (delegate (ISceneEntity sog)
             {
                 CacheCreators (sog);
             });
@@ -182,12 +182,12 @@ namespace Aurora.Addon.Hypergrid
 
         #endregion Event Handlers
 
-        private void CacheCreators (SceneObjectGroup sog)
+        private void CacheCreators (ISceneEntity sog)
         {
             //m_log.DebugFormat("[USER MANAGEMENT MODULE]: processing {0} {1}; {2}", sog.RootPart.Name, sog.RootPart.CreatorData, sog.RootPart.CreatorIdentification);
-            AddUser (sog.RootPart.CreatorID, sog.RootPart.CreatorData);
+            AddUser (sog.RootChild.CreatorID, sog.RootChild.CreatorData);
 
-            foreach (SceneObjectPart sop in sog.Parts)
+            foreach (ISceneChildEntity sop in sog.ChildrenEntities())
             {
                 AddUser (sop.CreatorID, sop.CreatorData);
                 foreach (TaskInventoryItem item in sop.TaskInventory.Values)

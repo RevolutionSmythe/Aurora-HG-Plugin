@@ -324,7 +324,8 @@ namespace Aurora.Addon.Hypergrid
                 aCircuit.ServiceURLs["IncomingCAPSHandler"] = regionClientCaps.CapsUrl;
             }
             aCircuit.child = false;//FIX THIS, OPENSIM ALWAYS SENDS CHILD!
-            bool success = m_SimulationService.CreateAgent (destination, ref aCircuit, (uint)loginFlag, null, out reason);
+            int requestedUDPPort = 0;
+            bool success = m_SimulationService.CreateAgent (destination, ref aCircuit, (uint)loginFlag, null, out requestedUDPPort, out reason);
             if (success)
             {
                 if(regionClientCaps != null)

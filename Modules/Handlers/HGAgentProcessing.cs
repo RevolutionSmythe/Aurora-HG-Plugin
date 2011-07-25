@@ -123,6 +123,7 @@ namespace Aurora.Addon.Hypergrid
                     circuitData.lastname = clientCaps.AccountInfo.LastName;
                 }
                 bool regionAccepted = false;
+                int requestedUDPPort = 0;
                 if ((originalDest.Flags & (int)Aurora.Framework.RegionFlags.Hyperlink) == (int)Aurora.Framework.RegionFlags.Hyperlink)
                 {
                     if (circuitData.ServiceURLs == null || circuitData.ServiceURLs.Count == 0)
@@ -149,7 +150,7 @@ namespace Aurora.Addon.Hypergrid
                 else
                 {
                     regionAccepted = SimulationService.CreateAgent (neighbor, ref circuitData,
-                            TeleportFlags, agentData, out reason);
+                            TeleportFlags, agentData, out requestedUDPPort, out reason);
                 }
                 if (regionAccepted)
                 {
@@ -175,12 +176,14 @@ namespace Aurora.Addon.Hypergrid
 
                         #endregion
                     }
+                    if (requestedUDPPort == 0)
+                        requestedUDPPort = neighbor.ExternalEndPoint.Port;
 
                     IEventQueueService EQService = m_registry.RequestModuleInterface<IEventQueueService> ();
 
                     EQService.EnableSimulator (neighbor.RegionHandle,
-                        neighbor.ExternalEndPoint.Address.GetAddressBytes (),
-                        neighbor.ExternalEndPoint.Port, AgentID,
+                        Util.ResolveAddressForClient (neighbor.ExternalEndPoint, clientCaps.ClientEndPoint).Address.GetAddressBytes (),
+                        requestedUDPPort, AgentID,
                         neighbor.RegionSizeX, neighbor.RegionSizeY, requestingRegion);
 
                     // EnableSimulator makes the client send a UseCircuitCode message to the destination, 
@@ -188,8 +191,8 @@ namespace Aurora.Addon.Hypergrid
                     // So let's wait
                     Thread.Sleep (300);
                     EQService.EstablishAgentCommunication (AgentID, neighbor.RegionHandle,
-                        neighbor.ExternalEndPoint.Address.GetAddressBytes (),
-                        neighbor.ExternalEndPoint.Port, otherRegionsCapsURL, neighbor.RegionSizeX,
+                        Util.ResolveAddressForClient (neighbor.ExternalEndPoint.Address, clientCaps.ClientEndPoint).GetAddressBytes (),
+                        requestedUDPPort, otherRegionsCapsURL, neighbor.RegionSizeX,
                         neighbor.RegionSizeY,
                         requestingRegion);
 

@@ -77,9 +77,6 @@ namespace Aurora.Addon.Hypergrid
         {
             if (m_registry == null)//Not initialized
                 return;
-            IInventoryData invData = Aurora.DataManager.DataManager.RequestPlugin<IInventoryData> ();
-            if (invData != null && invData is HGInventoryConnector)
-                ((HGInventoryConnector)invData).AddInvHooks (m_registry);//Tell it about any refs it needs for HG inv
 
             InventoryInConnector inConnector = m_registry.RequestModuleInterface<InventoryInConnector> ();
             if (inConnector != null)//Add the external handler

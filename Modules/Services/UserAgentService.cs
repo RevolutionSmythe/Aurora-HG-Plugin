@@ -61,6 +61,7 @@ namespace Aurora.Addon.Hypergrid
         static Dictionary<UUID, TravelingAgentInfo> m_TravelingAgents = new Dictionary<UUID, TravelingAgentInfo> ();
 
         protected static IGridService m_GridService;
+        protected static IRegistryCore m_registry;
         protected static IAsyncMessagePostService m_asyncPostService;
         protected static GatekeeperServiceConnector m_GatekeeperConnector;
         protected static IGatekeeperService m_GatekeeperService;
@@ -78,6 +79,7 @@ namespace Aurora.Addon.Hypergrid
             if (hgConfig == null || !hgConfig.GetBoolean ("Enabled", false))
                 return;
 
+            m_registry = registry;
             registry.RegisterModuleInterface<IUserAgentService> (this);
         }
 
@@ -93,13 +95,6 @@ namespace Aurora.Addon.Hypergrid
             if (serverConfig == null || !serverConfig.GetBoolean ("Enabled", false))
                 return;
 
-            m_GridService = registry.RequestModuleInterface<IGridService> ();
-            m_asyncPostService = registry.RequestModuleInterface<IAsyncMessagePostService> ();
-            m_GatekeeperConnector = new GatekeeperServiceConnector (registry.RequestModuleInterface<IAssetService>());
-            m_GatekeeperService = registry.RequestModuleInterface<IGatekeeperService> ();
-            m_FriendsService = registry.RequestModuleInterface<IFriendsService> ();
-            m_PresenceService = registry.RequestModuleInterface<IAgentInfoService> ();
-            m_UserAccountService = registry.RequestModuleInterface<IUserAccountService> ();
             m_BypassClientVerification = serverConfig.GetBoolean ("BypassClientVerification", false);
 
             m_GridName = serverConfig.GetString ("ExternalName", string.Empty);
@@ -112,6 +107,15 @@ namespace Aurora.Addon.Hypergrid
 
         public void FinishedStartup ()
         {
+            if (m_registry == null)
+                return;//Not enabled
+            m_GridService = m_registry.RequestModuleInterface<IGridService> ();
+            m_asyncPostService = m_registry.RequestModuleInterface<IAsyncMessagePostService> ();
+            m_GatekeeperConnector = new GatekeeperServiceConnector (m_registry.RequestModuleInterface<IAssetService> ());
+            m_GatekeeperService = m_registry.RequestModuleInterface<IGatekeeperService> ();
+            m_FriendsService = m_registry.RequestModuleInterface<IFriendsService> ();
+            m_PresenceService = m_registry.RequestModuleInterface<IAgentInfoService> ();
+            m_UserAccountService = m_registry.RequestModuleInterface<IUserAccountService> ();
         }
 
         public GridRegion GetHomeRegion (AgentCircuitData circuit, out Vector3 position, out Vector3 lookAt)
@@ -156,23 +160,12 @@ namespace Aurora.Addon.Hypergrid
                     position = uinfo.HomePosition;
                     lookAt = uinfo.HomeLookAt;
                 }
-                if (home == null)
+                if (home == null || ((home.Flags & (int)Aurora.Framework.RegionFlags.Safe) 
+                    != (int)Aurora.Framework.RegionFlags.Safe))
                 {
-                    List<GridRegion> defs = m_GridService.GetDefaultRegions (UUID.Zero);
-                    if (defs != null && defs.Count > 0)
-                        home = defs[0];
-                    if (home == null)
-                    {
-                        defs = m_GridService.GetFallbackRegions (UUID.Zero, 0, 0);
-                        if (defs != null && defs.Count > 0)
-                            home = defs[0];
-                        if (home == null)
-                        {
-                            defs = m_GridService.GetSafeRegions (UUID.Zero, 0, 0);
-                            if (defs != null && defs.Count > 0)
-                                home = defs[0];
-                        }
-                    }
+                    home = m_GatekeeperService.GetHyperlinkRegion (UUID.Zero);
+                    position = new Vector3 (home.RegionSizeX / 2, home.RegionSizeY / 2, 20);
+                    lookAt = Vector3.Zero;
                 }
             }
 
@@ -319,7 +312,7 @@ namespace Aurora.Addon.Hypergrid
             if (m_BypassClientVerification)
                 return true;
 
-            m_log.DebugFormat ("[USER AGENT SERVICE]: Verifying Client session {0} with reported IP {1}.",
+            m_log.InfoFormat ("[USER AGENT SERVICE]: Verifying Client session {0} with reported IP {1}.",
                 sessionID, reportedIP);
 
             if (m_TravelingAgents.ContainsKey (sessionID))

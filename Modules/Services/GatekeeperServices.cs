@@ -53,6 +53,7 @@ namespace Aurora.Addon.Hypergrid
                 MethodBase.GetCurrentMethod ().DeclaringType);
 
         private static IGridService m_GridService;
+        private static IRegistryCore m_registry;
         private static IAgentInfoService m_PresenceService;
         private static IUserAccountService m_UserAccountService;
         private static IUserAgentService m_UserAgentService;
@@ -61,6 +62,7 @@ namespace Aurora.Addon.Hypergrid
 
         protected string m_AllowedClients = string.Empty;
         protected string m_DeniedClients = string.Empty;
+        protected string m_defaultRegion = string.Empty;
 
         private static bool m_AllowTeleportsToAnyRegion;
         private static string m_ExternalName;
@@ -76,11 +78,14 @@ namespace Aurora.Addon.Hypergrid
             bool enabled = false;
             if (serverConfig != null)
             {
-                m_AllowTeleportsToAnyRegion = serverConfig.GetBoolean ("AllowTeleportsToAnyRegion", true);
+                m_AllowTeleportsToAnyRegion = hgConfig.GetBoolean ("AllowTeleportsToAnyRegion", true);
+                m_defaultRegion = hgConfig.GetString ("DefaultTeleportRegion", "");
                 enabled = serverConfig.GetBoolean ("Enabled", enabled);
             }
             if (!enabled)
                 return;
+
+            m_registry = registry;
             
             IHttpServer server = MainServer.Instance;
             m_ExternalName = server.HostName + ":" + server.Port + "/";
@@ -92,16 +97,58 @@ namespace Aurora.Addon.Hypergrid
 
         public void Start (IConfigSource config, IRegistryCore registry)
         {
-            m_CapsService = registry.RequestModuleInterface<ICapsService> ();
-            m_GridService = registry.RequestModuleInterface<IGridService> ();
-            m_PresenceService = registry.RequestModuleInterface<IAgentInfoService>();
-            m_UserAccountService = registry.RequestModuleInterface<IUserAccountService>();
-            m_UserAgentService = registry.RequestModuleInterface<IUserAgentService>();
-            m_SimulationService = registry.RequestModuleInterface<ISimulationService> ();
         }
 
         public void FinishedStartup ()
         {
+            if (m_registry == null)
+                return; //Not enabled
+            m_CapsService = m_registry.RequestModuleInterface<ICapsService> ();
+            m_GridService = m_registry.RequestModuleInterface<IGridService> ();
+            m_PresenceService = m_registry.RequestModuleInterface<IAgentInfoService> ();
+            m_UserAccountService = m_registry.RequestModuleInterface<IUserAccountService> ();
+            m_UserAgentService = m_registry.RequestModuleInterface<IUserAgentService> ();
+            m_SimulationService = m_registry.RequestModuleInterface<ISimulationService> ();
+            m_DefaultGatewayRegion = FindDefaultRegion ();
+        }
+
+        private GridRegion FindDefaultRegion ()
+        {
+            GridRegion region = null;
+            if (m_defaultRegion != "")//This overrides all
+            {
+                region = m_GridService.GetRegionByName (UUID.Zero, m_defaultRegion);
+                if (region != null)
+                    return region;
+            }
+            List<GridRegion> defs = m_GridService.GetDefaultRegions (UUID.Zero);
+            if (defs != null && defs.Count > 0)
+                region = FindRegion(defs);
+            if (region == null)
+            {
+                defs = m_GridService.GetFallbackRegions (UUID.Zero, 0, 0);
+                if (defs != null && defs.Count > 0)
+                    region = FindRegion (defs);
+                if (region == null)
+                {
+                    defs = m_GridService.GetSafeRegions (UUID.Zero, 0, 0);
+                    if (defs != null && defs.Count > 0)
+                        region = FindRegion (defs);
+                    if (region == null)
+                        m_log.WarnFormat ("[GATEKEEPER SERVICE]: Please specify a default region for this grid!");
+                }
+            }
+            return region;
+        }
+
+        private GridRegion FindRegion (List<GridRegion> defs)
+        {
+            for (int i = 0; i < defs.Count; i++)
+            {
+                if ((defs[i].Flags & (int)Aurora.Framework.RegionFlags.Safe) == (int)Aurora.Framework.RegionFlags.Safe)
+                    return defs[i];
+            }
+            return null;
         }
 
         public bool LinkRegion (string regionName, out UUID regionID, out ulong regionHandle, out string externalName, out string imageURL, out string reason)
@@ -116,35 +163,12 @@ namespace Aurora.Addon.Hypergrid
             m_log.DebugFormat ("[GATEKEEPER SERVICE]: Request to link to {0}", (regionName == string.Empty) ? "default region" : regionName);
             if (!m_AllowTeleportsToAnyRegion || regionName == string.Empty)
             {
-                List<GridRegion> defs = m_GridService.GetDefaultRegions (UUID.Zero);
-                if (defs != null && defs.Count > 0)
-                {
-                    region = defs[0];
-                    m_DefaultGatewayRegion = region;
-                }
+                if (m_DefaultGatewayRegion != null)
+                    region = m_DefaultGatewayRegion;
                 else
                 {
-                    defs = m_GridService.GetFallbackRegions (UUID.Zero, 0, 0);
-                    if (defs != null && defs.Count > 0)
-                    {
-                        region = defs[0];
-                        m_DefaultGatewayRegion = region;
-                    }
-                    else
-                    {
-                        defs = m_GridService.GetSafeRegions (UUID.Zero, 0, 0);
-                        if (defs != null && defs.Count > 0)
-                        {
-                            region = defs[0];
-                            m_DefaultGatewayRegion = region;
-                        }
-                        else
-                        {
-                            reason = "Grid setup problem. Try specifying a particular region here.";
-                            m_log.DebugFormat ("[GATEKEEPER SERVICE]: Unable to send information. Please specify a default region for this grid!");
-                            return false;
-                        }
-                    }
+                    reason = "Grid setup problem. Try specifying a particular region here.";
+                    return false;
                 }
             }
             else
@@ -152,8 +176,13 @@ namespace Aurora.Addon.Hypergrid
                 region = m_GridService.GetRegionByName (UUID.Zero, regionName);
                 if (region == null)
                 {
-                    reason = "Region not found";
-                    return false;
+                    if (m_DefaultGatewayRegion != null)
+                        region = m_DefaultGatewayRegion;
+                    if (region == null)
+                    {
+                        reason = "Region not found";
+                        return false;
+                    }
                 }
             }
 
@@ -176,7 +205,11 @@ namespace Aurora.Addon.Hypergrid
                 return m_DefaultGatewayRegion;
 
             GridRegion region = m_GridService.GetRegionByUUID (UUID.Zero, regionID);
-            return region;
+            if((region.Flags & (int)Aurora.Framework.RegionFlags.Safe) == (int)Aurora.Framework.RegionFlags.Safe)
+                return region;
+            if ((m_DefaultGatewayRegion.Flags & (int)Aurora.Framework.RegionFlags.Safe) == (int)Aurora.Framework.RegionFlags.Safe)
+                return m_DefaultGatewayRegion;
+            return (m_DefaultGatewayRegion = FindDefaultRegion ());
         }
 
         #region Login Agent
@@ -254,7 +287,7 @@ namespace Aurora.Addon.Hypergrid
                     }
                 }
             }
-            m_log.DebugFormat ("[GATEKEEPER SERVICE]: User is ok");
+            m_log.InfoFormat ("[GATEKEEPER SERVICE]: User is ok");
 
             // May want to authorize
 
@@ -281,7 +314,6 @@ namespace Aurora.Addon.Hypergrid
                 reason = "Destination region not found";
                 return false;
             }
-            m_log.DebugFormat ("[GATEKEEPER SERVICE]: destination ok: {0}", destination.RegionName);
 
             //
             // Adjust the visible name
@@ -306,11 +338,11 @@ namespace Aurora.Addon.Hypergrid
                 }
             }
 
+            retry:
             //
             // Finally launch the agent at the destination
             //
             TeleportFlags loginFlag = /*isFirstLogin ? */TeleportFlags.ViaLogin/* : TeleportFlags.ViaHGLogin*/;
-            m_log.DebugFormat ("[GATEKEEPER SERVICE]: launching agent {0}", loginFlag);
             IRegionClientCapsService regionClientCaps = null;
             if (m_CapsService != null)
             {
@@ -328,15 +360,32 @@ namespace Aurora.Addon.Hypergrid
             bool success = m_SimulationService.CreateAgent (destination, ref aCircuit, (uint)loginFlag, null, out requestedUDPPort, out reason);
             if (success)
             {
-                if(regionClientCaps != null)
+                if (regionClientCaps != null)
                 {
                     OSDMap responseMap = (OSDMap)OSDParser.DeserializeJson (reason);
                     OSDMap SimSeedCaps = (OSDMap)responseMap["CapsUrls"];
                     regionClientCaps.AddCAPS (SimSeedCaps);
                 }
             }
-            else if(m_CapsService != null)
-                m_CapsService.RemoveCAPS (aCircuit.AgentID);
+            else
+            {
+                if (m_CapsService != null)
+                    m_CapsService.RemoveCAPS (aCircuit.AgentID);
+                m_GridService.SetRegionUnsafe (destination.RegionID);
+                if (destination != m_DefaultGatewayRegion)
+                {
+                    destination = m_DefaultGatewayRegion;
+                    goto retry;
+                }
+                else
+                {
+                    m_DefaultGatewayRegion = FindDefaultRegion ();
+                    if (m_DefaultGatewayRegion == destination)
+                        return false;//It failed to find a new one
+                    destination = m_DefaultGatewayRegion;
+                    goto retry;//It found a new default region
+                }
+            }
             return success;
         }
 

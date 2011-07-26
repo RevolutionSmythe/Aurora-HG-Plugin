@@ -284,6 +284,11 @@ namespace Aurora.Addon.Hypergrid
             return string.Empty;
         }
 
+        public bool GetUserExists (UUID userID)
+        {
+            return m_UserCache.ContainsKey (userID);
+        }
+
         public string GetUserServerURL (UUID userID, string serverType)
         {
             if (m_UserCache.ContainsKey (userID))

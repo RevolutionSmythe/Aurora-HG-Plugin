@@ -149,13 +149,14 @@ namespace Aurora.Addon.Hypergrid
             else
             {
                 InventoryItemBase it = base.GetItem (item);
+                if(it != null)
+                {
+                    UserAccount user = m_UserAccountService.GetUserAccount(UUID.Zero, UUID.Parse(it.CreatorId));
 
-                UserAccount user = m_UserAccountService.GetUserAccount (UUID.Zero, UUID.Parse(it.CreatorId));
-
-                // Adjust the creator data
-                if (user != null && it != null && (it.CreatorData == null || it.CreatorData == string.Empty))
-                    it.CreatorData = GetHandlers.PROFILE_URL + "/" + it.CreatorId + ";" + user.FirstName + " " + user.LastName;
-
+                    // Adjust the creator data
+                    if(user != null && it != null && (it.CreatorData == null || it.CreatorData == string.Empty))
+                        it.CreatorData = GetHandlers.PROFILE_URL + "/" + it.CreatorId + ";" + user.FirstName + " " + user.LastName;
+                }
                 return it;
             }
         }

@@ -180,17 +180,17 @@ namespace Aurora.Addon.Hypergrid
                 bitmap = new Bitmap (filename);
                 //m_log.Debug("Size: " + m.PhysicalDimension.Height + "-" + m.PhysicalDimension.Width);
                 byte[] imageData = OpenJPEG.EncodeFromImage (bitmap, true);
-                AssetBase ass = new AssetBase (UUID.Random (), "region " + name, (sbyte)AssetType.Texture, regionID.ToString ());
+                AssetBase ass = new AssetBase (UUID.Random (), "region " + name, AssetType.Texture, regionID);
 
                 // !!! for now
                 //info.RegionSettings.TerrainImageID = ass.FullID;
 
                 ass.Data = imageData;
 
-                mapTile = ass.FullID;
+                mapTile = ass.ID;
 
                 // finally
-                m_AssetService.Store (ass);
+                mapTile = m_AssetService.Store (ass);
 
             }
             catch // LEGIT: Catching problems caused by OpenJPEG p/invoke

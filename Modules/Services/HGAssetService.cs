@@ -104,24 +104,12 @@ namespace Aurora.Addon.Hypergrid
             if (asset == null)
                 return null;
 
-            if (asset.Metadata.Type == (sbyte)AssetType.Object)
+            if (asset.Type == (sbyte)AssetType.Object)
                 asset.Data = AdjustIdentifiers (asset.Data);
 
-            AdjustIdentifiers (asset.Metadata);
+            AdjustIdentifiers (asset);
 
             return asset;
-        }
-
-        public override AssetMetadata GetMetadata (string id)
-        {
-            AssetMetadata meta = base.GetMetadata (id);
-
-            if (meta == null)
-                return null;
-
-            AdjustIdentifiers (meta);
-
-            return meta;
         }
 
         public override byte[] GetData (string id)
@@ -138,11 +126,11 @@ namespace Aurora.Addon.Hypergrid
         {
             AssetBase asset = base.GetCached (id);
             if(asset != null)
-                AdjustIdentifiers (asset.Metadata);
+                AdjustIdentifiers (asset);
             return asset;
         }
 
-        public override bool Delete (string id)
+        public override bool Delete (UUID id)
         {
             // NOGO
             return false;
@@ -150,24 +138,22 @@ namespace Aurora.Addon.Hypergrid
 
         #endregion
 
-        protected override void FixAssetID (ref AssetBase asset)
+        /*protected override void FixAssetID (ref AssetBase asset)
         {
             if (asset == null || asset.Metadata.URL != "")//Don't reappend
                 return;
-            asset.Metadata.URL = MainServer.Instance.HostName + ":" + MainServer.Instance.Port + "/assets/" + asset.ID;
+            asset.URL = MainServer.Instance.HostName + ":" + MainServer.Instance.Port + "/assets/" + asset.ID;
             //asset.ID = MainServer.Instance.HostName + ":" + MainServer.Instance.Port + "/assets/" + asset.ID;
-        }
+        }*/
 
-        protected void AdjustIdentifiers (AssetMetadata meta)
+        protected void AdjustIdentifiers (AssetBase meta)
         {
-            if (meta.CreatorID != null && meta.CreatorID != string.Empty)
+            /*if (meta.CreatorID != null && meta.CreatorID != UUID.Zero)
             {
-                UUID uuid = UUID.Zero;
-                UUID.TryParse (meta.CreatorID, out uuid);
                 UserAccount creator = m_UserAccountService.GetUserAccount (UUID.Zero, uuid);
                 if (creator != null)
                     meta.CreatorID = m_ProfileServiceURL + "/" + meta.CreatorID + ";" + creator.FirstName + " " + creator.LastName;
-            }
+            }*/
         }
 
         protected byte[] AdjustIdentifiers (byte[] data)

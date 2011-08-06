@@ -173,7 +173,7 @@ namespace Aurora.Addon.Hypergrid
         void HandleUUIDNameRequest (UUID uuid, IClientAPI remote_client)
         {
             UserAccount account = remote_client.Scene.UserAccountService.GetUserAccount(UUID.Zero, uuid);
-            if(account != null)
+            if(account == null)
             {
                 string[] names = GetUserNames(uuid);
                 if(names.Length == 2)

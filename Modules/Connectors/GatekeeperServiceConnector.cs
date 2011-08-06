@@ -190,7 +190,7 @@ namespace Aurora.Addon.Hypergrid
                 mapTile = ass.ID;
 
                 // finally
-                mapTile = m_AssetService.Store (ass);
+                mapTile = m_AssetService.Store(ass);
 
             }
             catch // LEGIT: Catching problems caused by OpenJPEG p/invoke

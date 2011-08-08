@@ -173,8 +173,9 @@ namespace Aurora.Addon.Hypergrid
         public GridRegion LinkRegion (UUID scopeID, string regionDescriptor)
         {
             string reason = string.Empty;
-            int xloc = random.Next (0, Int16.MaxValue) * (int)Constants.RegionSize;
-            return TryLinkRegionToCoords (scopeID, regionDescriptor, xloc, 0, out reason);
+            int xloc = random.Next(0, Int16.MaxValue) * (int)Constants.RegionSize;
+            int yloc = random.Next(0, Int16.MaxValue) * (int)Constants.RegionSize;
+            return TryLinkRegionToCoords (scopeID, regionDescriptor, xloc, yloc, out reason);
         }
 
         private static Random random = new Random ();
@@ -278,7 +279,7 @@ namespace Aurora.Addon.Hypergrid
                 }
             }
 
-            if (remoteRegionName != string.Empty && remoteRegionName != null)
+            if (!string.IsNullOrEmpty(remoteRegionName))
                 regInfo.RegionName = remoteRegionName;
 
             regInfo.RegionLocX = xloc;

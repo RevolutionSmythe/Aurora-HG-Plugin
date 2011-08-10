@@ -7,7 +7,10 @@ Run prebuild.bat and compile.bat and it will build the source
 ;;
 ;; To install in standalone mode
 ;;
-Drop StandaloneHypergrid.ini into Configuration/Modules/ and restart Aurora and it will function, no configuration required
+Drop StandaloneHypergrid.ini 
+or
+StandaloneIWCHypergrid.ini (and enable IWC in StandaloneCommon.ini.example)
+into Configuration/Modules/ and restart Aurora and it will function, no configuration required
 
 ;;
 ;; To install in grid mode (Aurora.Server)

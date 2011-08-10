@@ -184,6 +184,8 @@ namespace Aurora.Addon.Hypergrid
                     }
                     if (requestedUDPPort == 0)
                         requestedUDPPort = neighbor.ExternalEndPoint.Port;
+                    if(ipAddress == null)
+                        ipAddress = neighbor.ExternalEndPoint.Address;
                     circuitData.RegionUDPPort = requestedUDPPort;
                     otherRegionService = clientCaps.GetCapsService(neighbor.RegionHandle);
                     otherRegionService.LoopbackRegionIP = ipAddress;

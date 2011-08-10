@@ -154,12 +154,18 @@ namespace Aurora.Addon.Hypergrid
                 }
                 if (regionAccepted)
                 {
+                    IPAddress ipAddress = neighbor.ExternalEndPoint.Address;
                     string otherRegionsCapsURL;
                     //If the region accepted us, we should get a CAPS url back as the reason, if not, its not updated or not an Aurora region, so don't touch it.
                     if (reason != "")
                     {
                         OSDMap responseMap = (OSDMap)OSDParser.DeserializeJson (reason);
                         OSDMap SimSeedCaps = (OSDMap)responseMap["CapsUrls"];
+                        if(responseMap.ContainsKey("OurIPForClient"))
+                        {
+                            string ip = responseMap["OurIPForClient"].AsString();
+                            ipAddress = IPAddress.Parse(ip);
+                        }
                         otherRegionService.AddCAPS (SimSeedCaps);
                         otherRegionsCapsURL = otherRegionService.CapsUrl;
                     }
@@ -178,11 +184,15 @@ namespace Aurora.Addon.Hypergrid
                     }
                     if (requestedUDPPort == 0)
                         requestedUDPPort = neighbor.ExternalEndPoint.Port;
+                    circuitData.RegionUDPPort = requestedUDPPort;
+                    otherRegionService = clientCaps.GetCapsService(neighbor.RegionHandle);
+                    otherRegionService.LoopbackRegionIP = ipAddress;
+                    otherRegionService.CircuitData.RegionUDPPort = requestedUDPPort;
 
                     IEventQueueService EQService = m_registry.RequestModuleInterface<IEventQueueService> ();
 
                     EQService.EnableSimulator (neighbor.RegionHandle,
-                        Util.ResolveAddressForClient (neighbor.ExternalEndPoint, clientCaps.ClientEndPoint).Address.GetAddressBytes (),
+                        ipAddress.GetAddressBytes(),
                         requestedUDPPort, AgentID,
                         neighbor.RegionSizeX, neighbor.RegionSizeY, requestingRegion);
 
@@ -191,7 +201,7 @@ namespace Aurora.Addon.Hypergrid
                     // So let's wait
                     Thread.Sleep (300);
                     EQService.EstablishAgentCommunication (AgentID, neighbor.RegionHandle,
-                        Util.ResolveAddressForClient (neighbor.ExternalEndPoint.Address, clientCaps.ClientEndPoint).GetAddressBytes (),
+                        ipAddress.GetAddressBytes(),
                         requestedUDPPort, otherRegionsCapsURL, neighbor.RegionSizeX,
                         neighbor.RegionSizeY,
                         requestingRegion);

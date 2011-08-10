@@ -15,11 +15,12 @@ into Configuration/Modules/ and restart Aurora and it will function, no configur
 ;;
 ;; To install in grid mode (Aurora.Server)
 ;;
-In AuroraServer.ini, Change Include-Main to
+In AuroraServer.ini, if you just want to enable HG only, change Include-Main to
 
 Include-Main = AuroraServerConfiguration/HGMain.ini
-
 and copy the file HGMain into the folder AuroraServerConfiguration/
+
+otherwise, uncomment Include-IWCHGMain and comment Include-Main to enable both HG and IWC
 
 ;;
 ;; To install in grid mode (region)

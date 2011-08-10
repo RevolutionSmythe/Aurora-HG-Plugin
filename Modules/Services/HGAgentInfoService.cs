@@ -13,11 +13,11 @@ namespace Aurora.Addon.Hypergrid
     {
         public override void Initialize (Nini.Config.IConfigSource config, IRegistryCore registry)
         {
+            m_registry = registry;
             IConfig hgConfig = config.Configs["HyperGrid"];
             if (hgConfig == null || !hgConfig.GetBoolean ("Enabled", false))
                 return;
 
-            m_registry = registry;
             IConfig handlerConfig = config.Configs["Handlers"];
             if (handlerConfig.GetString ("AgentInfoHandler", "") != Name)
                 return;

@@ -67,6 +67,7 @@ namespace Aurora.Addon.Hypergrid
         private static bool m_AllowTeleportsToAnyRegion;
         private static string m_ExternalName;
         private static GridRegion m_DefaultGatewayRegion;
+        private static bool m_foundDefaultRegion = false;
 
         public void Initialize (IConfigSource config, IRegistryCore registry)
         {
@@ -138,6 +139,8 @@ namespace Aurora.Addon.Hypergrid
                         m_log.WarnFormat ("[GATEKEEPER SERVICE]: Please specify a default region for this grid!");
                 }
             }
+            if(region != null)
+                m_foundDefaultRegion = true;
             return region;
         }
 
@@ -163,6 +166,8 @@ namespace Aurora.Addon.Hypergrid
             m_log.DebugFormat ("[GATEKEEPER SERVICE]: Request to link to {0}", (regionName == string.Empty) ? "default region" : regionName);
             if (!m_AllowTeleportsToAnyRegion || regionName == string.Empty)
             {
+                if(!m_foundDefaultRegion)
+                    m_DefaultGatewayRegion = FindDefaultRegion();
                 if (m_DefaultGatewayRegion != null)
                     region = m_DefaultGatewayRegion;
                 else
@@ -176,6 +181,8 @@ namespace Aurora.Addon.Hypergrid
                 region = m_GridService.GetRegionByName (UUID.Zero, regionName);
                 if (region == null)
                 {
+                    if(!m_foundDefaultRegion)
+                        m_DefaultGatewayRegion = FindDefaultRegion();
                     if (m_DefaultGatewayRegion != null)
                         region = m_DefaultGatewayRegion;
                     if (region == null)
@@ -200,13 +207,19 @@ namespace Aurora.Addon.Hypergrid
         {
             m_log.DebugFormat ("[GATEKEEPER SERVICE]: Request to get hyperlink region {0}", regionID);
 
-            if (!m_AllowTeleportsToAnyRegion)
+            if(!m_AllowTeleportsToAnyRegion)
+            {
+                if(!m_foundDefaultRegion)
+                    m_DefaultGatewayRegion = FindDefaultRegion();
                 // Don't even check the given regionID
                 return m_DefaultGatewayRegion;
+            }
 
             GridRegion region = m_GridService.GetRegionByUUID (UUID.Zero, regionID);
-            if((region.Flags & (int)Aurora.Framework.RegionFlags.Safe) == (int)Aurora.Framework.RegionFlags.Safe)
+            if(region != null && (region.Flags & (int)Aurora.Framework.RegionFlags.Safe) == (int)Aurora.Framework.RegionFlags.Safe)
                 return region;
+            if(!m_foundDefaultRegion)
+                m_DefaultGatewayRegion = FindDefaultRegion();
             if ((m_DefaultGatewayRegion.Flags & (int)Aurora.Framework.RegionFlags.Safe) == (int)Aurora.Framework.RegionFlags.Safe)
                 return m_DefaultGatewayRegion;
             return (m_DefaultGatewayRegion = FindDefaultRegion ());
@@ -371,7 +384,9 @@ namespace Aurora.Addon.Hypergrid
             {
                 if (m_CapsService != null)
                     m_CapsService.RemoveCAPS (aCircuit.AgentID);
-                m_GridService.SetRegionUnsafe (destination.RegionID);
+                m_GridService.SetRegionUnsafe(destination.RegionID);
+                if(!m_foundDefaultRegion)
+                    m_DefaultGatewayRegion = FindDefaultRegion();
                 if (destination != m_DefaultGatewayRegion)
                 {
                     destination = m_DefaultGatewayRegion;

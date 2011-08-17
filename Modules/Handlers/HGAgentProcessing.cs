@@ -149,6 +149,8 @@ namespace Aurora.Addon.Hypergrid
                 }
                 else
                 {
+                    if(circuitData.child)
+                        circuitData.reallyischild = true;
                     regionAccepted = SimulationService.CreateAgent (neighbor, ref circuitData,
                             TeleportFlags, agentData, out requestedUDPPort, out reason);
                 }

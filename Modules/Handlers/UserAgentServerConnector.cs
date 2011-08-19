@@ -105,7 +105,7 @@ namespace Aurora.Addon.Hypergrid
 
             m_HomeUsersService = registry.RequestModuleInterface<IUserAgentService> ();
             Uri m_Uri = new Uri (server.HostName);
-            IPAddress ip = Util.GetHostFromDNS (m_Uri.Host);
+            IPAddress ip = NetworkUtils.GetHostFromDNS(m_Uri.Host);
             string sip = ip.ToString ();
             server.AddHTTPHandler ("/homeagent", new HomeAgentHandler (m_HomeUsersService, sip, proxy).Handler);
         }

@@ -68,7 +68,7 @@ namespace Aurora.Addon.Hypergrid
                 try
                 {
                     Uri m_Uri = new Uri (m_ServerURL);
-                    IPAddress ip = Util.GetHostFromDNS (m_Uri.Host);
+                    IPAddress ip = NetworkUtils.GetHostFromDNS(m_Uri.Host);
                     m_ServerURL = m_ServerURL.Replace (m_Uri.Host, ip.ToString ());
                     if (!m_ServerURL.EndsWith ("/"))
                         m_ServerURL += "/";

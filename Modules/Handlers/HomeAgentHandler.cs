@@ -210,7 +210,7 @@ namespace Aurora.Addon.Hypergrid
         private string GetCallerIP (Hashtable request)
         {
             if (!m_Proxy)
-                return Util.GetCallerIP (request);
+                return NetworkUtils.GetCallerIP(request);
 
             // We're behind a proxy
             Hashtable headers = (Hashtable)request["headers"];
@@ -221,17 +221,17 @@ namespace Aurora.Addon.Hypergrid
             if (!headers.ContainsKey (xff) || headers[xff] == null)
             {
                 m_log.WarnFormat ("[AGENT HANDLER]: No XFF header");
-                return Util.GetCallerIP (request);
+                return NetworkUtils.GetCallerIP(request);
             }
 
             m_log.DebugFormat ("[AGENT HANDLER]: XFF is {0}", headers[xff]);
 
-            IPEndPoint ep = Util.GetClientIPFromXFF ((string)headers[xff]);
+            IPEndPoint ep = NetworkUtils.GetClientIPFromXFF((string)headers[xff]);
             if (ep != null)
                 return ep.Address.ToString ();
 
             // Oops
-            return Util.GetCallerIP (request);
+            return NetworkUtils.GetCallerIP(request);
         }
     }
 

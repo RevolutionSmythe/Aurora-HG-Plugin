@@ -91,7 +91,7 @@ namespace Aurora.Addon.Hypergrid
             IHttpServer server = MainServer.Instance;
             m_ExternalName = server.HostName + ":" + server.Port + "/";
             Uri m_Uri = new Uri (m_ExternalName);
-            IPAddress ip = Util.GetHostFromDNS (m_Uri.Host);
+            IPAddress ip = NetworkUtils.GetHostFromDNS(m_Uri.Host);
             m_ExternalName = m_ExternalName.Replace (m_Uri.Host, ip.ToString ());
             registry.RegisterModuleInterface<IGatekeeperService> (this);
         }
@@ -455,7 +455,7 @@ namespace Aurora.Addon.Hypergrid
             string externalname = m_ExternalName.TrimEnd (trailing_slash);
             m_log.DebugFormat ("[GATEKEEPER SERVICE]: Verifying {0} against {1}", addressee, externalname);
             Uri m_Uri = new Uri (addressee);
-            IPAddress ip = Util.GetHostFromDNS (m_Uri.Host);
+            IPAddress ip = NetworkUtils.GetHostFromDNS(m_Uri.Host);
             addressee = addressee.Replace (m_Uri.Host, ip.ToString ());
             return string.Equals (addressee, externalname, StringComparison.OrdinalIgnoreCase);
         }

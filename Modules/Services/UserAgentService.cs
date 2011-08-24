@@ -304,7 +304,25 @@ namespace Aurora.Addon.Hypergrid
 
             TravelingAgentInfo travel = m_TravelingAgents[sessionID];
 
-            return NetworkUtils.GetHostFromDNS(travel.GridExternalName).ToString().ToLower() == NetworkUtils.GetHostFromDNS(thisGridExternalName).ToString().ToLower();
+            string a = travel.GridExternalName, b = thisGridExternalName;
+            try
+            {
+                a = NetworkUtils.GetHostFromDNS(travel.GridExternalName).ToString().ToLower();
+            }
+            catch
+            {
+                a = travel.GridExternalName;
+            }
+            try
+            {
+                b = NetworkUtils.GetHostFromDNS(thisGridExternalName).ToString().ToLower();
+            }
+            catch
+            {
+                b = thisGridExternalName;
+            }
+
+            return a == b;
         }
 
         public bool VerifyClient (UUID sessionID, string reportedIP)

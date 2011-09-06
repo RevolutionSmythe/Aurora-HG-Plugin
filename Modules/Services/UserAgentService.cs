@@ -133,7 +133,7 @@ namespace Aurora.Addon.Hypergrid
 
                     region.ExternalHostName = uri.Host;
                     region.HttpPort = (uint)uri.Port;
-                    region.ServerURI = "http://" + region.ExternalHostName + ":" + region.HttpPort;
+                    region.ServerURI = region.ServerURI;
                     region.RegionName = string.Empty;
                     region.InternalEndPoint = new System.Net.IPEndPoint (System.Net.IPAddress.Parse ("0.0.0.0"), (int)0);
                     bool isComingHome = userAgentService.AgentIsComingHome (circuit.SessionID, m_GridName);
@@ -164,8 +164,11 @@ namespace Aurora.Addon.Hypergrid
                     != (int)Aurora.Framework.RegionFlags.Safe))
                 {
                     home = m_GatekeeperService.GetHyperlinkRegion (UUID.Zero);
-                    position = new Vector3 (home.RegionSizeX / 2, home.RegionSizeY / 2, 20);
-                    lookAt = Vector3.Zero;
+                    if (home != null)
+                    {
+                        position = new Vector3(home.RegionSizeX / 2, home.RegionSizeY / 2, 20);
+                        lookAt = Vector3.Zero;
+                    }
                 }
             }
 

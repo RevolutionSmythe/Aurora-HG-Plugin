@@ -92,7 +92,7 @@ namespace Aurora.Addon.Hypergrid
 
             XmlRpcRequest request = new XmlRpcRequest ("link_region", paramList);
             if (info.ServerURI == null)
-                info.ServerURI = "http://" + info.ExternalHostName + ":" + info.HttpPort;
+                info.ServerURI = "http://" + info.ServerURI + ":" + info.HttpPort;
             m_log.Debug ("[GATEKEEPER SERVICE CONNECTOR]: Linking to " + info.ServerURI);
             XmlRpcResponse response = null;
             try

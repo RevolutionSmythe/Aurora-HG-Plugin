@@ -177,8 +177,7 @@ namespace Aurora.Addon.Hypergrid
                         #region OpenSim teleport compatibility!
 
                         useCallbacks = false;
-                        otherRegionsCapsURL = "http://" + neighbor.ExternalHostName.ToString () +
-                            ":" + neighbor.HttpPort + 
+                        otherRegionsCapsURL = neighbor.ServerURI + 
                             CapsUtil.GetCapsSeedPath (circuitData.CapsPath);
                         otherRegionService.CapsUrl = otherRegionsCapsURL;
 

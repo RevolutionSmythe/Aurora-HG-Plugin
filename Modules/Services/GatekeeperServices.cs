@@ -118,9 +118,12 @@ namespace Aurora.Addon.Hypergrid
             GridRegion region = null;
             if (m_defaultRegion != "")//This overrides all
             {
-                region = m_GridService.GetRegionByName (UUID.Zero, m_defaultRegion);
+                region = m_GridService.GetRegionByName(UUID.Zero, m_defaultRegion);
                 if (region != null)
+                {
+                    m_foundDefaultRegion = true;
                     return region;
+                }
             }
             List<GridRegion> defs = m_GridService.GetDefaultRegions (UUID.Zero);
             if (defs != null && defs.Count > 0)
@@ -209,7 +212,7 @@ namespace Aurora.Addon.Hypergrid
 
             if(!m_AllowTeleportsToAnyRegion)
             {
-                if(!m_foundDefaultRegion)
+                if (!m_foundDefaultRegion || m_DefaultGatewayRegion == null)
                     m_DefaultGatewayRegion = FindDefaultRegion();
                 // Don't even check the given regionID
                 return m_DefaultGatewayRegion;
@@ -218,9 +221,9 @@ namespace Aurora.Addon.Hypergrid
             GridRegion region = m_GridService.GetRegionByUUID (UUID.Zero, regionID);
             if(region != null && (region.Flags & (int)Aurora.Framework.RegionFlags.Safe) == (int)Aurora.Framework.RegionFlags.Safe)
                 return region;
-            if(!m_foundDefaultRegion)
+            if (!m_foundDefaultRegion || m_DefaultGatewayRegion == null)
                 m_DefaultGatewayRegion = FindDefaultRegion();
-            if ((m_DefaultGatewayRegion.Flags & (int)Aurora.Framework.RegionFlags.Safe) == (int)Aurora.Framework.RegionFlags.Safe)
+            if (m_DefaultGatewayRegion != null && (m_DefaultGatewayRegion.Flags & (int)Aurora.Framework.RegionFlags.Safe) == (int)Aurora.Framework.RegionFlags.Safe)
                 return m_DefaultGatewayRegion;
             return (m_DefaultGatewayRegion = FindDefaultRegion ());
         }

@@ -70,7 +70,8 @@ namespace Aurora.Addon.Hypergrid
 
         private bool IsHGURL (string name)
         {
-            name = name.Replace ("http://", "");
+            name = name.Replace("http://", "");
+            name = name.Replace("https://", "");
             string[] split = name.Split (':');
             if (split.Length < 2)
                 return false;

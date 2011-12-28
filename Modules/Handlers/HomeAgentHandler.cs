@@ -50,28 +50,27 @@ namespace Aurora.Addon.Hypergrid
 {
     public class HomeAgentHandler
     {
-        private static readonly ILog m_log = LogManager.GetLogger (MethodBase.GetCurrentMethod ().DeclaringType);
         private IUserAgentService m_UserAgentService;
 
-        private string m_LoginServerIP;
+        private string m_loginServerIP;
         private bool m_Proxy = false;
 
         public HomeAgentHandler (IUserAgentService userAgentService, string loginServerIP, bool proxy)
         {
             m_UserAgentService = userAgentService;
-            m_LoginServerIP = loginServerIP;
+            m_loginServerIP = loginServerIP;
             m_Proxy = proxy;
         }
 
         public Hashtable Handler (Hashtable request)
         {
-            //            m_log.Debug("[CONNECTION DEBUGGING]: HomeAgentHandler Called");
+            //            MainConsole.Instance.Debug("[CONNECTION DEBUGGING]: HomeAgentHandler Called");
             //
-            //            m_log.Debug("---------------------------");
-            //            m_log.Debug(" >> uri=" + request["uri"]);
-            //            m_log.Debug(" >> content-type=" + request["content-type"]);
-            //            m_log.Debug(" >> http-method=" + request["http-method"]);
-            //            m_log.Debug("---------------------------\n");
+            //            MainConsole.Instance.Debug("---------------------------");
+            //            MainConsole.Instance.Debug(" >> uri=" + request["uri"]);
+            //            MainConsole.Instance.Debug(" >> content-type=" + request["content-type"]);
+            //            MainConsole.Instance.Debug(" >> http-method=" + request["http-method"]);
+            //            MainConsole.Instance.Debug("---------------------------\n");
 
             Hashtable responsedata = new Hashtable ();
             responsedata["content_type"] = "text/html";
@@ -83,7 +82,7 @@ namespace Aurora.Addon.Hypergrid
             string action;
             if (!WebUtils.GetParams ((string)request["uri"], out agentID, out regionID, out action))
             {
-                m_log.InfoFormat ("[HOME AGENT HANDLER]: Invalid parameters for agent message {0}", request["uri"]);
+                MainConsole.Instance.InfoFormat ("[HOME AGENT HANDLER]: Invalid parameters for agent message {0}", request["uri"]);
                 responsedata["int_response_code"] = 404;
                 responsedata["str_response_string"] = "false";
 
@@ -99,7 +98,7 @@ namespace Aurora.Addon.Hypergrid
             }
             else
             {
-                m_log.InfoFormat ("[HOME AGENT HANDLER]: method {0} not supported in agent message", method);
+                MainConsole.Instance.InfoFormat ("[HOME AGENT HANDLER]: method {0} not supported in agent message", method);
                 responsedata["int_response_code"] = HttpStatusCode.MethodNotAllowed;
                 responsedata["str_response_string"] = "Method not allowed";
 
@@ -146,11 +145,11 @@ namespace Aurora.Addon.Hypergrid
             if (args.ContainsKey ("destination_x") && args["destination_x"] != null)
                 Int32.TryParse (args["destination_x"].AsString (), out x);
             else
-                m_log.WarnFormat ("  -- request didn't have destination_x");
+                MainConsole.Instance.WarnFormat ("  -- request didn't have destination_x");
             if (args.ContainsKey ("destination_y") && args["destination_y"] != null)
                 Int32.TryParse (args["destination_y"].AsString (), out y);
             else
-                m_log.WarnFormat ("  -- request didn't have destination_y");
+                MainConsole.Instance.WarnFormat ("  -- request didn't have destination_y");
             if (args.ContainsKey ("destination_uuid") && args["destination_uuid"] != null)
                 UUID.TryParse (args["destination_uuid"].AsString (), out uuid);
             if (args.ContainsKey ("destination_name") && args["destination_name"] != null)
@@ -163,14 +162,14 @@ namespace Aurora.Addon.Hypergrid
                 {
                     string callerIP = GetCallerIP (request);
                     // Verify if this caller has authority to send the client IP
-                    if (callerIP == m_LoginServerIP)
+                    if (callerIP == m_loginServerIP)
                         client_ipaddress = new IPEndPoint (IPAddress.Parse (ip_str), 0);
                     else // leaving this for now, but this warning should be removed
-                        m_log.WarnFormat ("[HOME AGENT HANDLER]: Unauthorized machine {0} tried to set client ip to {1}", callerIP, ip_str);
+                        MainConsole.Instance.WarnFormat ("[HOME AGENT HANDLER]: Unauthorized machine {0} tried to set client ip to {1}", callerIP, ip_str);
                 }
                 catch
                 {
-                    m_log.DebugFormat ("[HOME AGENT HANDLER]: Exception parsing client ip address from {0}", ip_str);
+                    MainConsole.Instance.DebugFormat ("[HOME AGENT HANDLER]: Exception parsing client ip address from {0}", ip_str);
                 }
             }
 
@@ -188,7 +187,7 @@ namespace Aurora.Addon.Hypergrid
             }
             catch (Exception ex)
             {
-                m_log.InfoFormat ("[HOME AGENT HANDLER]: exception on unpacking ChildCreate message {0}", ex.Message);
+                MainConsole.Instance.InfoFormat ("[HOME AGENT HANDLER]: exception on unpacking ChildCreate message {0}", ex.Message);
                 responsedata["int_response_code"] = HttpStatusCode.BadRequest;
                 responsedata["str_response_string"] = "Bad request";
                 return;
@@ -220,11 +219,11 @@ namespace Aurora.Addon.Hypergrid
 
             if (!headers.ContainsKey (xff) || headers[xff] == null)
             {
-                m_log.WarnFormat ("[AGENT HANDLER]: No XFF header");
+                MainConsole.Instance.WarnFormat ("[AGENT HANDLER]: No XFF header");
                 return NetworkUtils.GetCallerIP(request);
             }
 
-            m_log.DebugFormat ("[AGENT HANDLER]: XFF is {0}", headers[xff]);
+            MainConsole.Instance.DebugFormat ("[AGENT HANDLER]: XFF is {0}", headers[xff]);
 
             IPEndPoint ep = NetworkUtils.GetClientIPFromXFF((string)headers[xff]);
             if (ep != null)

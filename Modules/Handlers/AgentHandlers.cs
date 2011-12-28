@@ -49,8 +49,6 @@ namespace Aurora.Addon.Hypergrid
 {
     public class GatekeeperAgentHandler : BaseStreamHandler
     {
-        private static readonly ILog m_log = LogManager.GetLogger (MethodBase.GetCurrentMethod ().DeclaringType);
-        
         private ISimulationService m_SimulationService;
         private IGatekeeperService m_GatekeeperService;
         protected bool m_Proxy = false;
@@ -66,7 +64,7 @@ namespace Aurora.Addon.Hypergrid
         public override byte[] Handle (string path, Stream request,
                 OSHttpRequest httpRequest, OSHttpResponse httpResponse)
         {
-            m_log.DebugFormat ("[SIMULATION]: Stream handler called");
+            MainConsole.Instance.DebugFormat ("[SIMULATION]: Stream handler called");
 
             Hashtable keysvals = new Hashtable ();
             Hashtable headervals = new Hashtable ();
@@ -112,7 +110,7 @@ namespace Aurora.Addon.Hypergrid
 
             if (!WebUtils.GetParams ((string)keysvals["uri"], out agentID, out regionID, out action))
             {
-                m_log.InfoFormat ("[AGENT HANDLER]: Invalid parameters for agent message {0}", keysvals["uri"]);
+                MainConsole.Instance.InfoFormat ("[AGENT HANDLER]: Invalid parameters for agent message {0}", keysvals["uri"]);
 
                 httpResponse.StatusCode = 404;
 
@@ -143,11 +141,11 @@ namespace Aurora.Addon.Hypergrid
             if (args.ContainsKey ("destination_x") && args["destination_x"] != null)
                 Int32.TryParse (args["destination_x"].AsString (), out x);
             else
-                m_log.WarnFormat ("  -- request didn't have destination_x");
+                MainConsole.Instance.WarnFormat ("  -- request didn't have destination_x");
             if (args.ContainsKey ("destination_y") && args["destination_y"] != null)
                 Int32.TryParse (args["destination_y"].AsString (), out y);
             else
-                m_log.WarnFormat ("  -- request didn't have destination_y");
+                MainConsole.Instance.WarnFormat ("  -- request didn't have destination_y");
             if (args.ContainsKey ("destination_uuid") && args["destination_uuid"] != null)
                 UUID.TryParse (args["destination_uuid"].AsString (), out uuid);
             if (args.ContainsKey ("destination_name") && args["destination_name"] != null)
@@ -168,7 +166,7 @@ namespace Aurora.Addon.Hypergrid
             }
             catch (Exception ex)
             {
-                m_log.InfoFormat ("[AGENT HANDLER]: exception on unpacking ChildCreate message {0}", ex.Message);
+                MainConsole.Instance.InfoFormat ("[AGENT HANDLER]: exception on unpacking ChildCreate message {0}", ex.Message);
                 responsedata["int_response_code"] = HttpStatusCode.BadRequest;
                 responsedata["str_response_string"] = "Bad request";
                 return;
@@ -202,7 +200,7 @@ namespace Aurora.Addon.Hypergrid
 
             //// DEBUG
             //foreach (object o in headers.Keys)
-            //    m_log.DebugFormat("XXX {0} = {1}", o.ToString(), (headers[o] == null? "null" : headers[o].ToString()));
+            //    MainConsole.Instance.DebugFormat("XXX {0} = {1}", o.ToString(), (headers[o] == null? "null" : headers[o].ToString()));
 
             string xff = "X-Forwarded-For";
             if (headers.ContainsKey (xff.ToLower ()))
@@ -210,11 +208,11 @@ namespace Aurora.Addon.Hypergrid
 
             if (!headers.ContainsKey (xff) || headers[xff] == null)
             {
-                m_log.WarnFormat ("[AGENT HANDLER]: No XFF header");
+                MainConsole.Instance.WarnFormat ("[AGENT HANDLER]: No XFF header");
                 return NetworkUtils.GetCallerIP(request);
             }
 
-            m_log.DebugFormat ("[AGENT HANDLER]: XFF is {0}", headers[xff]);
+            MainConsole.Instance.DebugFormat ("[AGENT HANDLER]: XFF is {0}", headers[xff]);
 
             IPEndPoint ep = NetworkUtils.GetClientIPFromXFF((string)headers[xff]);
             if (ep != null)

@@ -53,10 +53,6 @@ namespace Aurora.Addon.Hypergrid
     /// </summary>
     public class UserAgentService : IUserAgentService, IService
     {
-        private static readonly ILog m_log =
-                LogManager.GetLogger (
-                MethodBase.GetCurrentMethod ().DeclaringType);
-
         // This will need to go into a DB table
         static Dictionary<UUID, TravelingAgentInfo> m_TravelingAgents = new Dictionary<UUID, TravelingAgentInfo> ();
 
@@ -89,7 +85,7 @@ namespace Aurora.Addon.Hypergrid
             if (hgConfig == null || !hgConfig.GetBoolean ("Enabled", false))
                 return;
 
-            m_log.DebugFormat ("[HOME USERS SECURITY]: Starting...");
+            MainConsole.Instance.DebugFormat ("[HOME USERS SECURITY]: Starting...");
 
             IConfig serverConfig = config.Configs["UserAgentService"];
             if (serverConfig == null || !serverConfig.GetBoolean ("Enabled", false))
@@ -148,7 +144,7 @@ namespace Aurora.Addon.Hypergrid
             position = new Vector3 (128, 128, 0);
             lookAt = Vector3.UnitY;
 
-            m_log.DebugFormat ("[USER AGENT SERVICE]: Request to get home region of user {0}", userID);
+            MainConsole.Instance.DebugFormat ("[USER AGENT SERVICE]: Request to get home region of user {0}", userID);
 
             GridRegion home = null;
             UserInfo uinfo = m_PresenceService.GetUserInfo (userID.ToString ());
@@ -177,7 +173,7 @@ namespace Aurora.Addon.Hypergrid
 
         public bool LoginAgentToGrid (AgentCircuitData agentCircuit, GridRegion gatekeeper, GridRegion finalDestination, IPEndPoint clientIP, out string reason)
         {
-            m_log.DebugFormat ("[USER AGENT SERVICE]: Request to login user {0} (@{1}) to grid {2}",
+            MainConsole.Instance.DebugFormat ("[USER AGENT SERVICE]: Request to login user {0} (@{1}) to grid {2}",
                 agentCircuit.AgentID, ((clientIP == null) ? "stored IP" : clientIP.Address.ToString ()), gatekeeper.ServerURI);
             // Take the IP address + port of the gatekeeper (reg) plus the info of finalDestination
             GridRegion region = new GridRegion ();
@@ -198,7 +194,7 @@ namespace Aurora.Addon.Hypergrid
             string myExternalIP = string.Empty;
             string gridName = gatekeeper.ServerURI;
 
-            m_log.DebugFormat ("[USER AGENT SERVICE]: this grid: {0}, desired grid: {1}", m_GridName, gridName);
+            MainConsole.Instance.DebugFormat ("[USER AGENT SERVICE]: this grid: {0}, desired grid: {1}", m_GridName, gridName);
 
             if (m_GridName == gridName)
                 success = m_GatekeeperService.LoginAgent (agentCircuit, finalDestination, out reason);
@@ -212,7 +208,7 @@ namespace Aurora.Addon.Hypergrid
 
             if (!success)
             {
-                m_log.DebugFormat ("[USER AGENT SERVICE]: Unable to login user {0} to grid {1}, reason: {2}",
+                MainConsole.Instance.DebugFormat ("[USER AGENT SERVICE]: Unable to login user {0} to grid {1}, reason: {2}",
                     agentCircuit.AgentID, region.ServerURI, reason);
 
                 // restore the old travel info
@@ -229,7 +225,7 @@ namespace Aurora.Addon.Hypergrid
             else
                 reason = "";
 
-            m_log.DebugFormat ("[USER AGENT SERVICE]: Gatekeeper sees me as {0}", myExternalIP);
+            MainConsole.Instance.DebugFormat ("[USER AGENT SERVICE]: Gatekeeper sees me as {0}", myExternalIP);
             // else set the IP addresses associated with this client
             if (clientIP != null)
                 m_TravelingAgents[agentCircuit.SessionID].ClientIPAddress = clientIP.Address.ToString ();
@@ -248,7 +244,7 @@ namespace Aurora.Addon.Hypergrid
         {
             if (m_TravelingAgents.ContainsKey (sessionID))
             {
-                m_log.DebugFormat ("[USER AGENT SERVICE]: Setting IP {0} for session {1}", ip, sessionID);
+                MainConsole.Instance.DebugFormat ("[USER AGENT SERVICE]: Setting IP {0} for session {1}", ip, sessionID);
                 m_TravelingAgents[sessionID].ClientIPAddress = ip;
             }
         }
@@ -282,7 +278,7 @@ namespace Aurora.Addon.Hypergrid
 
         public void LogoutAgent (UUID userID, UUID sessionID)
         {
-            m_log.DebugFormat ("[USER AGENT SERVICE]: User {0} logged out", userID);
+            MainConsole.Instance.DebugFormat ("[USER AGENT SERVICE]: User {0} logged out", userID);
 
             lock (m_TravelingAgents)
             {
@@ -333,7 +329,7 @@ namespace Aurora.Addon.Hypergrid
             if (m_BypassClientVerification)
                 return true;
 
-            m_log.InfoFormat ("[USER AGENT SERVICE]: Verifying Client session {0} with reported IP {1}.",
+            MainConsole.Instance.InfoFormat ("[USER AGENT SERVICE]: Verifying Client session {0} with reported IP {1}.",
                 sessionID, reportedIP);
 
             if (m_TravelingAgents.ContainsKey (sessionID))
@@ -341,7 +337,7 @@ namespace Aurora.Addon.Hypergrid
                 bool result = m_TravelingAgents[sessionID].ClientIPAddress == reportedIP ||
                     m_TravelingAgents[sessionID].MyIpAddress == reportedIP; // NATed
 
-                m_log.DebugFormat ("[USER AGENT SERVICE]: Comparing {0} with login IP {1} and MyIP {1}; result is {3}",
+                MainConsole.Instance.DebugFormat ("[USER AGENT SERVICE]: Comparing {0} with login IP {1} and MyIP {1}; result is {3}",
                                     reportedIP, m_TravelingAgents[sessionID].ClientIPAddress, m_TravelingAgents[sessionID].MyIpAddress, result);
 
                 return result;
@@ -354,11 +350,11 @@ namespace Aurora.Addon.Hypergrid
         {
             if (m_TravelingAgents.ContainsKey (sessionID))
             {
-                m_log.DebugFormat ("[USER AGENT SERVICE]: Verifying agent token {0} against {1}", token, m_TravelingAgents[sessionID].ServiceToken);
+                MainConsole.Instance.DebugFormat ("[USER AGENT SERVICE]: Verifying agent token {0} against {1}", token, m_TravelingAgents[sessionID].ServiceToken);
                 return m_TravelingAgents[sessionID].ServiceToken == token;
             }
 
-            m_log.DebugFormat ("[USER AGENT SERVICE]: Token verification for session {0}: no such session", sessionID);
+            MainConsole.Instance.DebugFormat ("[USER AGENT SERVICE]: Token verification for session {0}: no such session", sessionID);
 
             return false;
         }
@@ -372,7 +368,7 @@ namespace Aurora.Addon.Hypergrid
                 return security.VerifyAgent (circuit.SessionID, circuit.ServiceSessionID);
             }
             else
-                m_log.DebugFormat ("[HG ENTITY TRANSFER MODULE]: Agent {0} {1} does not have a HomeURI OH NO!", circuit.firstname, circuit.lastname);
+                MainConsole.Instance.DebugFormat ("[HG ENTITY TRANSFER MODULE]: Agent {0} {1} does not have a HomeURI OH NO!", circuit.firstname, circuit.lastname);
             return VerifyAgent (circuit.SessionID, circuit.ServiceSessionID);
         }
 
@@ -394,13 +390,13 @@ namespace Aurora.Addon.Hypergrid
         {
             if (m_FriendsService == null || m_PresenceService == null)
             {
-                m_log.WarnFormat ("[USER AGENT SERVICE]: Unable to perform status notifications because friends or presence services are missing");
+                MainConsole.Instance.WarnFormat ("[USER AGENT SERVICE]: Unable to perform status notifications because friends or presence services are missing");
                 return new List<UUID> ();
             }
 
             List<UUID> localFriendsOnline = new List<UUID> ();
 
-            m_log.DebugFormat ("[USER AGENT SERVICE]: Status notification: foreign user {0} wants to notify {1} local friends", foreignUserID, friends.Count);
+            MainConsole.Instance.DebugFormat ("[USER AGENT SERVICE]: Status notification: foreign user {0} wants to notify {1} local friends", foreignUserID, friends.Count);
 
             // First, let's double check that the reported friends are, indeed, friends of that user
             // And let's check that the secret matches
@@ -424,7 +420,7 @@ namespace Aurora.Addon.Hypergrid
             }
 
             // Now, let's send the notifications
-            m_log.DebugFormat ("[USER AGENT SERVICE]: Status notification: user has {0} local friends", usersToBeNotified.Count);
+            MainConsole.Instance.DebugFormat ("[USER AGENT SERVICE]: Status notification: user has {0} local friends", usersToBeNotified.Count);
 
             // First, let's send notifications to local users who are online in the home grid
 
@@ -449,7 +445,7 @@ namespace Aurora.Addon.Hypergrid
                 {
                     string url = m_TravelingAgents[id].GridExternalName;
                     // forward
-                    m_log.WarnFormat ("[USER AGENT SERVICE]: User {0} is visiting {1}. HG Status notifications still not implemented.", user, url);
+                    MainConsole.Instance.WarnFormat ("[USER AGENT SERVICE]: User {0} is visiting {1}. HG Status notifications still not implemented.", user, url);
                 }
             }
 
@@ -468,11 +464,11 @@ namespace Aurora.Addon.Hypergrid
 
             if (m_FriendsService == null || m_PresenceService == null)
             {
-                m_log.WarnFormat ("[USER AGENT SERVICE]: Unable to get online friends because friends or presence services are missing");
+                MainConsole.Instance.WarnFormat ("[USER AGENT SERVICE]: Unable to get online friends because friends or presence services are missing");
                 return online;
             }
 
-            m_log.DebugFormat ("[USER AGENT SERVICE]: Foreign user {0} wants to know status of {1} local friends", foreignUserID, friends.Count);
+            MainConsole.Instance.DebugFormat ("[USER AGENT SERVICE]: Foreign user {0} wants to know status of {1} local friends", foreignUserID, friends.Count);
 
             // First, let's double check that the reported friends are, indeed, friends of that user
             // And let's check that the secret matches and the rights
@@ -497,7 +493,7 @@ namespace Aurora.Addon.Hypergrid
             }
 
             // Now, let's find out their status
-            m_log.DebugFormat ("[USER AGENT SERVICE]: GetOnlineFriends: user has {0} local friends with status rights", usersToBeNotified.Count);
+            MainConsole.Instance.DebugFormat ("[USER AGENT SERVICE]: GetOnlineFriends: user has {0} local friends with status rights", usersToBeNotified.Count);
 
             // First, let's send notifications to local users who are online in the home grid
             UserInfo[] friendSessions = m_PresenceService.GetUserInfos (usersToBeNotified.ToArray ());
@@ -518,7 +514,7 @@ namespace Aurora.Addon.Hypergrid
         {
             if (m_UserAccountService == null)
             {
-                m_log.WarnFormat ("[USER AGENT SERVICE]: Unable to get server URLs because user account service is missing");
+                MainConsole.Instance.WarnFormat ("[USER AGENT SERVICE]: Unable to get server URLs because user account service is missing");
                 return new Dictionary<string, object> ();
             }
             UserAccount account = m_UserAccountService.GetUserAccount (UUID.Zero /*!!!*/, userID);
@@ -534,7 +530,7 @@ namespace Aurora.Addon.Hypergrid
             {
                 if (t == null)
                 {
-                    m_log.ErrorFormat ("[USER AGENT SERVICE]: Oops! Null TravelingAgentInfo. Please report this on mantis");
+                    MainConsole.Instance.ErrorFormat ("[USER AGENT SERVICE]: Oops! Null TravelingAgentInfo. Please report this on mantis");
                     continue;
                 }
                 if (t.UserID == userID && !m_GridName.Equals (t.GridExternalName))

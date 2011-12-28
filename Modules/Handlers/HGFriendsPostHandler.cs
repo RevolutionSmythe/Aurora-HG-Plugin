@@ -72,8 +72,6 @@ namespace Aurora.Addon.Hypergrid
 
     public class HGFriendsServerPostHandler : BaseStreamHandler
     {
-        private static readonly ILog m_log = LogManager.GetLogger (MethodBase.GetCurrentMethod ().DeclaringType);
-
         private IFriendsService m_FriendsService;
         private IUserAgentService m_UserAgentService;
 
@@ -82,7 +80,7 @@ namespace Aurora.Addon.Hypergrid
         {
             m_FriendsService = service;
             m_UserAgentService = uservice;
-            m_log.DebugFormat ("[HGFRIENDS HANDLER]: HGFriendsServerPostHandler is On");
+            MainConsole.Instance.DebugFormat ("[HGFRIENDS HANDLER]: HGFriendsServerPostHandler is On");
         }
 
         public override byte[] Handle (string path, Stream requestData,
@@ -93,7 +91,7 @@ namespace Aurora.Addon.Hypergrid
             sr.Close ();
             body = body.Trim ();
 
-            //m_log.DebugFormat("[XXX]: query String: {0}", body);
+            //MainConsole.Instance.DebugFormat("[XXX]: query String: {0}", body);
 
             try
             {
@@ -116,11 +114,11 @@ namespace Aurora.Addon.Hypergrid
                     case "deletefriendship":
                         return DeleteFriendship (request);
                 }
-                m_log.DebugFormat ("[HGFRIENDS HANDLER]: unknown method {0} request {1}", method.Length, method);
+                MainConsole.Instance.DebugFormat ("[HGFRIENDS HANDLER]: unknown method {0} request {1}", method.Length, method);
             }
             catch (Exception e)
             {
-                m_log.DebugFormat ("[HGFRIENDS HANDLER]: Exception {0}", e);
+                MainConsole.Instance.DebugFormat ("[HGFRIENDS HANDLER]: Exception {0}", e);
             }
 
             return FailureResult ();
@@ -139,7 +137,7 @@ namespace Aurora.Addon.Hypergrid
                 UUID.TryParse (request["PRINCIPALID"].ToString (), out principalID);
             else
             {
-                m_log.WarnFormat ("[HGFRIENDS HANDLER]: no principalID in request to get friend perms");
+                MainConsole.Instance.WarnFormat ("[HGFRIENDS HANDLER]: no principalID in request to get friend perms");
                 return FailureResult ();
             }
 
@@ -148,7 +146,7 @@ namespace Aurora.Addon.Hypergrid
                 UUID.TryParse (request["FRIENDID"].ToString (), out friendID);
             else
             {
-                m_log.WarnFormat ("[HGFRIENDS HANDLER]: no friendID in request to get friend perms");
+                MainConsole.Instance.WarnFormat ("[HGFRIENDS HANDLER]: no friendID in request to get friend perms");
                 return FailureResult ();
             }
 
@@ -175,7 +173,7 @@ namespace Aurora.Addon.Hypergrid
                 return FailureResult ();
 
 
-            m_log.DebugFormat ("[HGFRIENDS HANDLER]: New friendship {0} {1}", friend.PrincipalID, friend.Friend);
+            MainConsole.Instance.DebugFormat ("[HGFRIENDS HANDLER]: New friendship {0} {1}", friend.PrincipalID, friend.Friend);
 
             // If the friendship already exists, return fail
             FriendInfo[] finfos = m_FriendsService.GetFriends (friend.PrincipalID);
@@ -208,7 +206,7 @@ namespace Aurora.Addon.Hypergrid
                 // We check the secret here
                 if (finfo.Friend.StartsWith (friend.Friend) && finfo.Friend.EndsWith (secret))
                 {
-                    m_log.DebugFormat ("[HGFRIENDS HANDLER]: Delete friendship {0} {1}", friend.PrincipalID, friend.Friend);
+                    MainConsole.Instance.DebugFormat ("[HGFRIENDS HANDLER]: Delete friendship {0} {1}", friend.PrincipalID, friend.Friend);
                     m_FriendsService.Delete (friend.PrincipalID, finfo.Friend);
                     m_FriendsService.Delete (UUID.Parse(finfo.Friend), friend.PrincipalID.ToString());
 
@@ -227,7 +225,7 @@ namespace Aurora.Addon.Hypergrid
         {
             if (!request.ContainsKey ("KEY") || !request.ContainsKey ("SESSIONID"))
             {
-                m_log.WarnFormat ("[HGFRIENDS HANDLER]: ignoring request without Key or SessionID");
+                MainConsole.Instance.WarnFormat ("[HGFRIENDS HANDLER]: ignoring request without Key or SessionID");
                 return false;
             }
 
@@ -238,11 +236,11 @@ namespace Aurora.Addon.Hypergrid
 
             if (!m_UserAgentService.VerifyAgent (sessionID, serviceKey))
             {
-                m_log.WarnFormat ("[HGFRIENDS HANDLER]: Key {0} for session {1} did not match existing key. Ignoring request", serviceKey, sessionID);
+                MainConsole.Instance.WarnFormat ("[HGFRIENDS HANDLER]: Key {0} for session {1} did not match existing key. Ignoring request", serviceKey, sessionID);
                 return false;
             }
 
-            m_log.DebugFormat ("[HGFRIENDS HANDLER]: Verification ok");
+            MainConsole.Instance.DebugFormat ("[HGFRIENDS HANDLER]: Verification ok");
             return true;
         }
 

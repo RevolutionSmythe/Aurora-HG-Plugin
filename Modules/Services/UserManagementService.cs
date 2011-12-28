@@ -54,8 +54,6 @@ namespace Aurora.Addon.Hypergrid
 
     public class UserManagementModule : BaseUserFinding, ISharedRegionModule, IUserManagement
     {
-        private static readonly ILog m_log = LogManager.GetLogger (MethodBase.GetCurrentMethod ().DeclaringType);
-
         private List<IScene> m_Scenes = new List<IScene> ();
 
         protected override IUserAccountService UserAccountService
@@ -147,7 +145,7 @@ namespace Aurora.Addon.Hypergrid
         void EventManager_OnStartupFullyComplete (IScene scene, List<string> data)
         {
             // let's sniff all the user names referenced by objects in the scene
-            m_log.DebugFormat ("[USER MANAGEMENT MODULE]: Caching creators' data from {0} ({1} objects)...", scene.RegionInfo.RegionName, scene.Entities.Count);
+            MainConsole.Instance.DebugFormat ("[USER MANAGEMENT MODULE]: Caching creators' data from {0} ({1} objects)...", scene.RegionInfo.RegionName, scene.Entities.Count);
             scene.ForEachSceneEntity (delegate (ISceneEntity sog)
             {
                 CacheCreators (sog);
@@ -178,7 +176,7 @@ namespace Aurora.Addon.Hypergrid
                 string[] names = GetUserNames(uuid);
                 if(names.Length == 2)
                 {
-                    //m_log.DebugFormat("[XXX] HandleUUIDNameRequest {0} is {1} {2}", uuid, names[0], names[1]);
+                    //MainConsole.Instance.DebugFormat("[XXX] HandleUUIDNameRequest {0} is {1} {2}", uuid, names[0], names[1]);
                     remote_client.SendNameReply(uuid, names[0], names[1]);
                 }
             }
@@ -188,7 +186,7 @@ namespace Aurora.Addon.Hypergrid
 
         private void CacheCreators (ISceneEntity sog)
         {
-            //m_log.DebugFormat("[USER MANAGEMENT MODULE]: processing {0} {1}; {2}", sog.RootPart.Name, sog.RootPart.CreatorData, sog.RootPart.CreatorIdentification);
+            //MainConsole.Instance.DebugFormat("[USER MANAGEMENT MODULE]: processing {0} {1}; {2}", sog.RootPart.Name, sog.RootPart.CreatorData, sog.RootPart.CreatorIdentification);
             AddUser (sog.RootChild.CreatorID, sog.RootChild.CreatorData);
 
             foreach (ISceneChildEntity sop in sog.ChildrenEntities())
@@ -267,7 +265,7 @@ namespace Aurora.Addon.Hypergrid
 
         public string GetUserName (UUID uuid)
         {
-            //m_log.DebugFormat("[XXX] GetUserName {0}", uuid);
+            //MainConsole.Instance.DebugFormat("[XXX] GetUserName {0}", uuid);
             string[] names = GetUserNames (uuid);
             if (names.Length == 2)
             {

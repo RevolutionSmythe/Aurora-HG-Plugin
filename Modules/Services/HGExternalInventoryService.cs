@@ -48,10 +48,6 @@ namespace Aurora.Addon.Hypergrid
     /// </summary>
     public class HGInventoryService : InventoryService, IExternalInventoryService
     {
-        private static readonly ILog m_log =
-                LogManager.GetLogger (
-                MethodBase.GetCurrentMethod ().DeclaringType);
-
         private IRegistryCore m_registry;
 
         public override void Initialize (IConfigSource config, IRegistryCore registry)
@@ -92,7 +88,7 @@ namespace Aurora.Addon.Hypergrid
 
         public override bool AddItem (InventoryItemBase item)
         {
-            //            m_log.DebugFormat(
+            //            MainConsole.Instance.DebugFormat(
             //                "[XINVENTORY SERVICE]: Adding item {0} to folder {1} for {2}", item.ID, item.Folder, item.Owner);
 
             item.Folder = GetRootFolder (item.Owner).ID;//All items into the foreign folder please!
@@ -102,7 +98,7 @@ namespace Aurora.Addon.Hypergrid
 
         public override InventoryFolderBase GetRootFolder (UUID principalID)
         {
-            //m_log.DebugFormat("[HG INVENTORY SERVICE]: GetRootFolder for {0}", principalID);
+            //MainConsole.Instance.DebugFormat("[HG INVENTORY SERVICE]: GetRootFolder for {0}", principalID);
             // Warp! Root folder for travelers
             List<InventoryFolderBase> folders = m_Database.GetFolders (
                     new string[] { "agentID", "type", "folderName" },

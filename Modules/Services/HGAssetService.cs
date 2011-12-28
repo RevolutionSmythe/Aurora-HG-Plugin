@@ -49,10 +49,6 @@ namespace Aurora.Addon.Hypergrid
     /// </summary>
     public class HGAssetService : AssetService, IExternalAssetService
     {
-        private static readonly ILog m_log =
-            LogManager.GetLogger (
-            MethodBase.GetCurrentMethod ().DeclaringType);
-
         private string m_ProfileServiceURL;
         private IUserAccountService m_UserAccountService;
 

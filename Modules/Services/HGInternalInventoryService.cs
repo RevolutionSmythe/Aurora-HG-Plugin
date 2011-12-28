@@ -48,10 +48,6 @@ namespace Aurora.Addon.Hypergrid
     /// </summary>
     public class HGInternalInventoryService : InventoryService
     {
-        private static readonly ILog m_log =
-                LogManager.GetLogger (
-                MethodBase.GetCurrentMethod ().DeclaringType);
-
         private IRegistryCore m_registry;
 
         public override void Initialize (IConfigSource config, IRegistryCore registry)
@@ -178,7 +174,7 @@ namespace Aurora.Addon.Hypergrid
             if (asset != null)
             {
                 m_registry.RequestModuleInterface<IAssetService> ().Store (asset);
-                m_log.DebugFormat ("[HG ASSET MAPPER]: Copied asset {0} from {1} to local asset server. ", asset.ID, url);
+                MainConsole.Instance.DebugFormat ("[HG ASSET MAPPER]: Copied asset {0} from {1} to local asset server. ", asset.ID, url);
                 return asset;
             }
             return null;

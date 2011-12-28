@@ -48,10 +48,6 @@ namespace Aurora.Addon.Hypergrid
 {
     public class GatekeeperService : IService, IGatekeeperService
     {
-        private static readonly ILog m_log =
-                LogManager.GetLogger (
-                MethodBase.GetCurrentMethod ().DeclaringType);
-
         private static IGridService m_GridService;
         private static IRegistryCore m_registry;
         private static IAgentInfoService m_PresenceService;
@@ -139,7 +135,7 @@ namespace Aurora.Addon.Hypergrid
                     if (defs != null && defs.Count > 0)
                         region = FindRegion (defs);
                     if (region == null)
-                        m_log.WarnFormat ("[GATEKEEPER SERVICE]: Please specify a default region for this grid!");
+                        MainConsole.Instance.WarnFormat ("[GATEKEEPER SERVICE]: Please specify a default region for this grid!");
                 }
             }
             if(region != null)
@@ -166,7 +162,7 @@ namespace Aurora.Addon.Hypergrid
             reason = string.Empty;
             GridRegion region = null;
 
-            m_log.DebugFormat ("[GATEKEEPER SERVICE]: Request to link to {0}", (regionName == string.Empty) ? "default region" : regionName);
+            MainConsole.Instance.DebugFormat ("[GATEKEEPER SERVICE]: Request to link to {0}", (regionName == string.Empty) ? "default region" : regionName);
             if (!m_AllowTeleportsToAnyRegion || regionName == string.Empty)
             {
                 if(!m_foundDefaultRegion)
@@ -208,7 +204,7 @@ namespace Aurora.Addon.Hypergrid
 
         public GridRegion GetHyperlinkRegion (UUID regionID)
         {
-            m_log.DebugFormat ("[GATEKEEPER SERVICE]: Request to get hyperlink region {0}", regionID);
+            MainConsole.Instance.DebugFormat ("[GATEKEEPER SERVICE]: Request to get hyperlink region {0}", regionID);
 
             if(!m_AllowTeleportsToAnyRegion)
             {
@@ -237,7 +233,7 @@ namespace Aurora.Addon.Hypergrid
             string authURL = string.Empty;
             if (aCircuit.ServiceURLs.ContainsKey ("HomeURI"))
                 authURL = aCircuit.ServiceURLs["HomeURI"].ToString ();
-            m_log.InfoFormat ("[GATEKEEPER SERVICE]: Login request for {0} {1} @ {2}",
+            MainConsole.Instance.InfoFormat ("[GATEKEEPER SERVICE]: Login request for {0} {1} @ {2}",
                 authURL, aCircuit.AgentID, destination.RegionName);
 
             //
@@ -250,7 +246,7 @@ namespace Aurora.Addon.Hypergrid
 
                 if (!am.Success)
                 {
-                    m_log.InfoFormat ("[GATEKEEPER SERVICE]: Login failed, reason: client {0} is not allowed", aCircuit.Viewer);
+                    MainConsole.Instance.InfoFormat ("[GATEKEEPER SERVICE]: Login failed, reason: client {0} is not allowed", aCircuit.Viewer);
                     return false;
                 }
             }
@@ -262,7 +258,7 @@ namespace Aurora.Addon.Hypergrid
 
                 if (dm.Success)
                 {
-                    m_log.InfoFormat ("[GATEKEEPER SERVICE]: Login failed, reason: client {0} is denied", aCircuit.Viewer);
+                    MainConsole.Instance.InfoFormat ("[GATEKEEPER SERVICE]: Login failed, reason: client {0} is denied", aCircuit.Viewer);
                     return false;
                 }
             }*/
@@ -273,10 +269,10 @@ namespace Aurora.Addon.Hypergrid
             if (!Authenticate (aCircuit))
             {
                 reason = "Unable to verify identity";
-                m_log.InfoFormat ("[GATEKEEPER SERVICE]: Unable to verify identity of agent {0}. Refusing service.", aCircuit.AgentID);
+                MainConsole.Instance.InfoFormat ("[GATEKEEPER SERVICE]: Unable to verify identity of agent {0}. Refusing service.", aCircuit.AgentID);
                 return false;
             }
-            m_log.DebugFormat ("[GATEKEEPER SERVICE]: Identity verified for {0} @ {1}", aCircuit.AgentID, authURL);
+            MainConsole.Instance.DebugFormat ("[GATEKEEPER SERVICE]: Identity verified for {0} @ {1}", aCircuit.AgentID, authURL);
 
             //
             // Check for impersonations
@@ -295,7 +291,7 @@ namespace Aurora.Addon.Hypergrid
                         {
                             // Can't do, sorry
                             reason = "Unauthorized";
-                            m_log.InfoFormat ("[GATEKEEPER SERVICE]: Foreign agent {0} has same ID as local user. Refusing service.",
+                            MainConsole.Instance.InfoFormat ("[GATEKEEPER SERVICE]: Foreign agent {0} has same ID as local user. Refusing service.",
                                 aCircuit.AgentID);
                             return false;
 
@@ -303,7 +299,7 @@ namespace Aurora.Addon.Hypergrid
                     }
                 }
             }
-            m_log.InfoFormat ("[GATEKEEPER SERVICE]: User is ok");
+            MainConsole.Instance.InfoFormat ("[GATEKEEPER SERVICE]: User is ok");
 
             // May want to authorize
 
@@ -319,7 +315,7 @@ namespace Aurora.Addon.Hypergrid
             else
                 m_PresenceService.SetLoggedIn (aCircuit.AgentID.ToString (), true, true, destination.RegionID);
 
-            m_log.DebugFormat ("[GATEKEEPER SERVICE]: Login presence ok");
+            MainConsole.Instance.DebugFormat ("[GATEKEEPER SERVICE]: Login presence ok");
 
             //
             // Get the region
@@ -349,7 +345,7 @@ namespace Aurora.Addon.Hypergrid
                 }
                 catch
                 {
-                    m_log.WarnFormat ("[GATEKEEPER SERVICE]: Malformed HomeURI (this should never happen): {0}", aCircuit.ServiceURLs["HomeURI"]);
+                    MainConsole.Instance.WarnFormat ("[GATEKEEPER SERVICE]: Malformed HomeURI (this should never happen): {0}", aCircuit.ServiceURLs["HomeURI"]);
                     aCircuit.lastname = "@" + aCircuit.ServiceURLs["HomeURI"].ToString ();
                 }
             }
@@ -418,7 +414,7 @@ namespace Aurora.Addon.Hypergrid
 
             if (userURL == string.Empty)
             {
-                m_log.DebugFormat ("[GATEKEEPER SERVICE]: Agent did not provide an authentication server URL");
+                MainConsole.Instance.DebugFormat ("[GATEKEEPER SERVICE]: Agent did not provide an authentication server URL");
                 return false;
             }
 
@@ -436,7 +432,7 @@ namespace Aurora.Addon.Hypergrid
                     }
                     catch
                     {
-                        m_log.DebugFormat ("[GATEKEEPER SERVICE]: Unable to contact authentication service at {0}", userURL);
+                        MainConsole.Instance.DebugFormat ("[GATEKEEPER SERVICE]: Unable to contact authentication service at {0}", userURL);
                         return false;
                     }
                 }
@@ -456,7 +452,7 @@ namespace Aurora.Addon.Hypergrid
             char[] trailing_slash = new char[] { '/' };
             string addressee = parts[0].TrimEnd (trailing_slash);
             string externalname = m_ExternalName.TrimEnd (trailing_slash);
-            m_log.DebugFormat ("[GATEKEEPER SERVICE]: Verifying {0} against {1}", addressee, externalname);
+            MainConsole.Instance.DebugFormat ("[GATEKEEPER SERVICE]: Verifying {0} against {1}", addressee, externalname);
             Uri m_Uri = new Uri (addressee);
             IPAddress ip = NetworkUtils.GetHostFromDNS(m_Uri.Host);
             addressee = addressee.Replace (m_Uri.Host, ip.ToString ());

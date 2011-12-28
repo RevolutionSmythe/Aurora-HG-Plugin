@@ -48,10 +48,6 @@ namespace Aurora.Addon.Hypergrid
 {
     public class HypergridLinker : IService, ICommunicationService
     {
-        private static readonly ILog m_log =
-                LogManager.GetLogger (
-                MethodBase.GetCurrentMethod ().DeclaringType);
-
         private static uint m_autoMappingX = 0;
         private static uint m_autoMappingY = 0;
         private static bool m_enableAutoMapping = false;
@@ -93,7 +89,7 @@ namespace Aurora.Addon.Hypergrid
                             m_DefaultRegion = new GridRegion ();
                             m_DefaultRegion.RegionLocX = Constants.RegionSize * 1000;
                             m_DefaultRegion.RegionLocY = Constants.RegionSize * 1000;
-                            m_log.Error ("[HYPERGRID LINKER]: Something is wrong with this grid. It has no regions?");
+                            MainConsole.Instance.Error ("[HYPERGRID LINKER]: Something is wrong with this grid. It has no regions?");
                         }
                     }
                 }
@@ -130,7 +126,7 @@ namespace Aurora.Addon.Hypergrid
                 }
                 catch (Exception e)
                 {
-                    m_log.WarnFormat ("[HYPERGRID LINKER]: Could not create map tile storage directory {0}: {1}", m_MapTileDirectory, e);
+                    MainConsole.Instance.WarnFormat ("[HYPERGRID LINKER]: Could not create map tile storage directory {0}: {1}", m_MapTileDirectory, e);
                     m_MapTileDirectory = string.Empty;
                 }
             }
@@ -157,7 +153,7 @@ namespace Aurora.Addon.Hypergrid
             m_GatekeeperConnector = new GatekeeperServiceConnector (m_AssetService);
             m_Database = Aurora.DataManager.DataManager.RequestPlugin<IRegionData> ();
 
-            m_log.Debug ("[HYPERGRID LINKER]: Loaded all services...");
+            MainConsole.Instance.Debug ("[HYPERGRID LINKER]: Loaded all services...");
         }
 
         public void FinishedStartup ()
@@ -205,7 +201,7 @@ namespace Aurora.Addon.Hypergrid
                 if (parts.Length >= 2)
                 {
                     portstr = parts[1];
-                    //m_log.Debug("-- port = " + portstr);
+                    //MainConsole.Instance.Debug("-- port = " + portstr);
                     if (!UInt32.TryParse (portstr, out port))
                         regionName = parts[1];
                 }
@@ -249,7 +245,7 @@ namespace Aurora.Addon.Hypergrid
 
         public bool TryCreateLink (UUID scopeID, int xloc, int yloc, string remoteRegionName, uint externalPort, string externalHostName, string serverURI, UUID ownerID, out GridRegion regInfo, out string reason)
         {
-            m_log.DebugFormat ("[HYPERGRID LINKER]: Link to {0} {1}, in {2}-{3}",
+            MainConsole.Instance.DebugFormat ("[HYPERGRID LINKER]: Link to {0} {1}, in {2}-{3}",
                 ((serverURI == null) ? (externalHostName + ":" + externalPort) : serverURI),
                 remoteRegionName, xloc / Constants.RegionSize, yloc / Constants.RegionSize);
 
@@ -297,13 +293,13 @@ namespace Aurora.Addon.Hypergrid
                 }
             }
             else
-                m_log.WarnFormat ("[HYPERGRID LINKER]: Please set this grid's Gatekeeper's address in [GridService]!");
+                MainConsole.Instance.WarnFormat ("[HYPERGRID LINKER]: Please set this grid's Gatekeeper's address in [GridService]!");
 
             // Check for free coordinates
             GridRegion region = m_GridService.GetRegionByPosition (regInfo.ScopeID, regInfo.RegionLocX, regInfo.RegionLocY);
             if (region != null)
             {
-                m_log.WarnFormat ("[HYPERGRID LINKER]: Coordinates {0}-{1} are already occupied by region {2} with uuid {3}",
+                MainConsole.Instance.WarnFormat ("[HYPERGRID LINKER]: Coordinates {0}-{1} are already occupied by region {2} with uuid {3}",
                     regInfo.RegionLocX / Constants.RegionSize, regInfo.RegionLocY / Constants.RegionSize,
                     region.RegionName, region.RegionID);
                 reason = "Coordinates are already in use";
@@ -316,7 +312,7 @@ namespace Aurora.Addon.Hypergrid
             }
             catch (Exception e)
             {
-                m_log.Warn ("[HYPERGRID LINKER]: Wrong format for link-region: " + e.Message);
+                MainConsole.Instance.Warn ("[HYPERGRID LINKER]: Wrong format for link-region: " + e.Message);
                 reason = "Internal error";
                 return false;
             }
@@ -330,7 +326,7 @@ namespace Aurora.Addon.Hypergrid
                 return false;
             if (regionID == UUID.Zero)
             {
-                m_log.Warn ("[HYPERGRID LINKER]: Unable to link region");
+                MainConsole.Instance.Warn ("[HYPERGRID LINKER]: Unable to link region");
                 reason = "Remote region could not be found";
                 return false;
             }
@@ -338,7 +334,7 @@ namespace Aurora.Addon.Hypergrid
             region = m_GridService.GetRegionByUUID (scopeID, regionID);
             if (region != null)
             {
-                m_log.DebugFormat ("[HYPERGRID LINKER]: Region already exists in coordinates {0} {1}",
+                MainConsole.Instance.DebugFormat ("[HYPERGRID LINKER]: Region already exists in coordinates {0} {1}",
                     region.RegionLocX / Constants.RegionSize, region.RegionLocY / Constants.RegionSize);
                 regInfo = region;
                 return true;
@@ -349,7 +345,7 @@ namespace Aurora.Addon.Hypergrid
             {
                 RemoveHyperlinkRegion (regInfo.RegionID);
                 reason = "Region is too far (" + x + ", " + y + ")";
-                m_log.Info ("[HYPERGRID LINKER]: Unable to link, region is too far (" + x + ", " + y + ")");
+                MainConsole.Instance.Info ("[HYPERGRID LINKER]: Unable to link, region is too far (" + x + ", " + y + ")");
                 return false;
             }
 
@@ -360,7 +356,7 @@ namespace Aurora.Addon.Hypergrid
             else
                 regInfo.RegionName = externalName;
 
-            m_log.DebugFormat ("[HYPERGRID LINKER]: naming linked region {0}, handle {1}", regInfo.RegionName, handle.ToString ());
+            MainConsole.Instance.DebugFormat ("[HYPERGRID LINKER]: naming linked region {0}, handle {1}", regInfo.RegionName, handle.ToString ());
 
             // Get the map image
             regInfo.TerrainImage = GetMapImage (regionID, imageURL);
@@ -371,13 +367,13 @@ namespace Aurora.Addon.Hypergrid
             //regInfo.RegionSecret = handle.ToString ();
 
             AddHyperlinkRegion (regInfo, handle);
-            m_log.InfoFormat ("[HYPERGRID LINKER]: Successfully linked to region {0} with image {1}", regInfo.RegionName, regInfo.TerrainImage);
+            MainConsole.Instance.InfoFormat ("[HYPERGRID LINKER]: Successfully linked to region {0} with image {1}", regInfo.RegionName, regInfo.TerrainImage);
             return true;
         }
 
         public bool TryUnlinkRegion (string mapName)
         {
-            m_log.DebugFormat ("[HYPERGRID LINKER]: Request to unlink {0}", mapName);
+            MainConsole.Instance.DebugFormat ("[HYPERGRID LINKER]: Request to unlink {0}", mapName);
             GridRegion regInfo = null;
 
             //TODO:
@@ -400,7 +396,7 @@ namespace Aurora.Addon.Hypergrid
             }
             else
             {
-                m_log.InfoFormat ("[HYPERGRID LINKER]: Region {0} not found", mapName);
+                MainConsole.Instance.InfoFormat ("[HYPERGRID LINKER]: Region {0} not found", mapName);
                 return false;
             }
         }
@@ -687,7 +683,7 @@ namespace Aurora.Addon.Hypergrid
             }
             catch (Exception e)
             {
-                m_log.Error (e.ToString ());
+                MainConsole.Instance.Error (e.ToString ());
             }
         }
 

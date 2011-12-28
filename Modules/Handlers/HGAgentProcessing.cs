@@ -56,7 +56,7 @@ namespace Aurora.Addon.Hypergrid
                 return false;
             }
             
-            m_log.Info ("[AgentProcessing]: Starting to inform client about neighbor " + neighbor.RegionName);
+            MainConsole.Instance.Info ("[AgentProcessing]: Starting to inform client about neighbor " + neighbor.RegionName);
 
             //Notes on this method
             // 1) the SimulationService.CreateAgent MUST have a fixed CapsUrl for the region, so we have to create (if needed)
@@ -212,18 +212,18 @@ namespace Aurora.Addon.Hypergrid
                     if (!useCallbacks)
                         Thread.Sleep (3000); //Give it a bit of time, only for OpenSim...
 
-                    m_log.Info ("[AgentProcessing]: Completed inform client about neighbor " + neighbor.RegionName);
+                    MainConsole.Instance.Info ("[AgentProcessing]: Completed inform client about neighbor " + neighbor.RegionName);
                 }
                 else
                 {
                     clientCaps.RemoveCAPS (neighbor.RegionHandle);
-                    m_log.Error ("[AgentProcessing]: Failed to inform client about neighbor " + neighbor.RegionName + ", reason: " + reason);
+                    MainConsole.Instance.Error ("[AgentProcessing]: Failed to inform client about neighbor " + neighbor.RegionName + ", reason: " + reason);
                     return false;
                 }
                 return true;
             }
             reason = "SimulationService does not exist";
-            m_log.Error ("[AgentProcessing]: Failed to inform client about neighbor " + neighbor.RegionName + ", reason: " + reason + "!");
+            MainConsole.Instance.Error ("[AgentProcessing]: Failed to inform client about neighbor " + neighbor.RegionName + ", reason: " + reason + "!");
             return false;
         }
 
@@ -235,13 +235,13 @@ namespace Aurora.Addon.Hypergrid
         {
             IGridService GridService = m_registry.RequestModuleInterface<IGridService> ();
             int flags = GridService.GetRegionFlags (UUID.Zero, region.RegionID);
-            m_log.DebugFormat ("[HG ENTITY TRANSFER MODULE]: region {0} flags: {1}", region.RegionID, flags);
+            MainConsole.Instance.DebugFormat ("[HG ENTITY TRANSFER MODULE]: region {0} flags: {1}", region.RegionID, flags);
             if ((flags & (int)Aurora.Framework.RegionFlags.Hyperlink) != 0)
             {
-                m_log.DebugFormat ("[HG ENTITY TRANSFER MODULE]: Destination region {0} is hyperlink", region.RegionID);
+                MainConsole.Instance.DebugFormat ("[HG ENTITY TRANSFER MODULE]: Destination region {0} is hyperlink", region.RegionID);
                 GridRegion real_destination = m_GatekeeperConnector.GetHyperlinkRegion (region, region.RegionID);
                 if(real_destination != null)
-                    m_log.DebugFormat ("[HG ENTITY TRANSFER MODULE]: GetFinalDestination serveruri -> {0}", real_destination.ServerURI);
+                    MainConsole.Instance.DebugFormat ("[HG ENTITY TRANSFER MODULE]: GetFinalDestination serveruri -> {0}", real_destination.ServerURI);
                 return real_destination;
             }
             return region;

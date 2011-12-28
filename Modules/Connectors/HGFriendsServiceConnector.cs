@@ -44,10 +44,6 @@ namespace Aurora.Addon.Hypergrid
 {
     public class HGFriendsServicesConnector
     {
-        private static readonly ILog m_log =
-                LogManager.GetLogger (
-                MethodBase.GetCurrentMethod ().DeclaringType);
-
         private string m_ServerURI = String.Empty;
         private string m_ServiceKey = String.Empty;
         private UUID m_SessionID;
@@ -98,14 +94,14 @@ namespace Aurora.Addon.Hypergrid
                         return perms;
                     }
                     else
-                        m_log.DebugFormat ("[HGFRIENDS CONNECTOR]: GetFriendPerms {0} received null response",
+                        MainConsole.Instance.DebugFormat ("[HGFRIENDS CONNECTOR]: GetFriendPerms {0} received null response",
                             PrincipalID);
 
                 }
             }
             catch (Exception e)
             {
-                m_log.DebugFormat ("[HGFRIENDS CONNECTOR]: Exception when contacting friends server: {0}", e.Message);
+                MainConsole.Instance.DebugFormat ("[HGFRIENDS CONNECTOR]: Exception when contacting friends server: {0}", e.Message);
             }
 
             return 0;
@@ -133,7 +129,7 @@ namespace Aurora.Addon.Hypergrid
             }
             catch (Exception e)
             {
-                m_log.DebugFormat ("[HGFRIENDS CONNECTOR]: Exception when contacting friends server: {0}", e.Message);
+                MainConsole.Instance.DebugFormat ("[HGFRIENDS CONNECTOR]: Exception when contacting friends server: {0}", e.Message);
                 return false;
             }
 
@@ -148,11 +144,11 @@ namespace Aurora.Addon.Hypergrid
                     return success;
                 }
                 else
-                    m_log.DebugFormat ("[HGFRIENDS CONNECTOR]: StoreFriend {0} {1} received null response",
+                    MainConsole.Instance.DebugFormat ("[HGFRIENDS CONNECTOR]: StoreFriend {0} {1} received null response",
                         PrincipalID, Friend);
             }
             else
-                m_log.DebugFormat ("[HGFRIENDS CONNECTOR]: StoreFriend received null reply");
+                MainConsole.Instance.DebugFormat ("[HGFRIENDS CONNECTOR]: StoreFriend received null reply");
 
             return false;
 
@@ -178,7 +174,7 @@ namespace Aurora.Addon.Hypergrid
             }
             catch (Exception e)
             {
-                m_log.DebugFormat ("[HGFRIENDS CONNECTOR]: Exception when contacting friends server: {0}", e.Message);
+                MainConsole.Instance.DebugFormat ("[HGFRIENDS CONNECTOR]: Exception when contacting friends server: {0}", e.Message);
                 return false;
             }
 
@@ -193,11 +189,11 @@ namespace Aurora.Addon.Hypergrid
                     return success;
                 }
                 else
-                    m_log.DebugFormat ("[HGFRIENDS CONNECTOR]: Delete {0} {1} received null response",
+                    MainConsole.Instance.DebugFormat ("[HGFRIENDS CONNECTOR]: Delete {0} {1} received null response",
                         PrincipalID, Friend);
             }
             else
-                m_log.DebugFormat ("[HGFRIENDS CONNECTOR]: DeleteFriend received null reply");
+                MainConsole.Instance.DebugFormat ("[HGFRIENDS CONNECTOR]: DeleteFriend received null reply");
 
             return false;
 

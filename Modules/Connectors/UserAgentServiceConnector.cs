@@ -46,10 +46,6 @@ namespace Aurora.Addon.Hypergrid
 {
     public class UserAgentServiceConnector : IUserAgentService
     {
-        private static readonly ILog m_log =
-            LogManager.GetLogger (
-            MethodBase.GetCurrentMethod ().DeclaringType);
-
         string m_ServerURL;
 
         public UserAgentServiceConnector (string url)
@@ -75,10 +71,10 @@ namespace Aurora.Addon.Hypergrid
                 }
                 catch (Exception e)
                 {
-                    m_log.DebugFormat ("[USER AGENT CONNECTOR]: Malformed Uri {0}: {1}", m_ServerURL, e.Message);
+                    MainConsole.Instance.DebugFormat ("[USER AGENT CONNECTOR]: Malformed Uri {0}: {1}", m_ServerURL, e.Message);
                 }
             }
-            m_log.DebugFormat ("[USER AGENT CONNECTOR]: new connector to {0} ({1})", url, m_ServerURL);
+            MainConsole.Instance.DebugFormat ("[USER AGENT CONNECTOR]: new connector to {0} ({1})", url, m_ServerURL);
         }
 
         public UserAgentServiceConnector (IConfigSource config)
@@ -86,7 +82,7 @@ namespace Aurora.Addon.Hypergrid
             IConfig serviceConfig = config.Configs["UserAgentService"];
             if (serviceConfig == null)
             {
-                m_log.Error ("[USER AGENT CONNECTOR]: UserAgentService missing from ini");
+                MainConsole.Instance.Error ("[USER AGENT CONNECTOR]: UserAgentService missing from ini");
                 throw new Exception ("UserAgent connector init error");
             }
 
@@ -95,14 +91,14 @@ namespace Aurora.Addon.Hypergrid
 
             if (serviceURI == String.Empty)
             {
-                m_log.Error ("[USER AGENT CONNECTOR]: No Server URI named in section UserAgentService");
+                MainConsole.Instance.Error ("[USER AGENT CONNECTOR]: No Server URI named in section UserAgentService");
                 throw new Exception ("UserAgent connector init error");
             }
             m_ServerURL = serviceURI;
             if (!m_ServerURL.EndsWith ("/"))
                 m_ServerURL += "/";
 
-            m_log.DebugFormat ("[USER AGENT CONNECTOR]: UserAgentServiceConnector started for {0}", m_ServerURL);
+            MainConsole.Instance.DebugFormat ("[USER AGENT CONNECTOR]: UserAgentServiceConnector started for {0}", m_ServerURL);
         }
 
 
@@ -114,7 +110,7 @@ namespace Aurora.Addon.Hypergrid
             if (destination == null)
             {
                 reason = "Destination is null";
-                m_log.Debug ("[USER AGENT CONNECTOR]: Given destination is null");
+                MainConsole.Instance.Debug ("[USER AGENT CONNECTOR]: Given destination is null");
                 return false;
             }
 
@@ -143,7 +139,7 @@ namespace Aurora.Addon.Hypergrid
             }
             catch (Exception e)
             {
-                m_log.WarnFormat ("[USER AGENT CONNECTOR]: Exception thrown on serialization of ChildCreate: {0}", e.Message);
+                MainConsole.Instance.WarnFormat ("[USER AGENT CONNECTOR]: Exception thrown on serialization of ChildCreate: {0}", e.Message);
                 // ignore. buffer will be empty, caller should check.
             }
 
@@ -153,13 +149,13 @@ namespace Aurora.Addon.Hypergrid
                 AgentCreateRequest.ContentLength = buffer.Length;   //Count bytes to send
                 os = AgentCreateRequest.GetRequestStream ();
                 os.Write (buffer, 0, strBuffer.Length);         //Send it
-                m_log.InfoFormat ("[USER AGENT CONNECTOR]: Posted CreateAgent request to remote sim {0}, region {1}, x={2} y={3}",
+                MainConsole.Instance.InfoFormat ("[USER AGENT CONNECTOR]: Posted CreateAgent request to remote sim {0}, region {1}, x={2} y={3}",
                     uri, destination.RegionName, destination.RegionLocX, destination.RegionLocY);
             }
             //catch (WebException ex)
             catch
             {
-                //m_log.InfoFormat("[USER AGENT CONNECTOR]: Bad send on ChildAgentUpdate {0}", ex.Message);
+                //MainConsole.Instance.InfoFormat("[USER AGENT CONNECTOR]: Bad send on ChildAgentUpdate {0}", ex.Message);
                 reason = "cannot contact remote region";
                 return false;
             }
@@ -170,7 +166,7 @@ namespace Aurora.Addon.Hypergrid
             }
 
             // Let's wait for the response
-            //m_log.Info("[USER AGENT CONNECTOR]: Waiting for a reply after DoCreateChildAgentCall");
+            //MainConsole.Instance.Info("[USER AGENT CONNECTOR]: Waiting for a reply after DoCreateChildAgentCall");
 
             WebResponse webResponse = null;
             StreamReader sr = null;
@@ -179,14 +175,14 @@ namespace Aurora.Addon.Hypergrid
                 webResponse = AgentCreateRequest.GetResponse ();
                 if (webResponse == null)
                 {
-                    m_log.Info ("[USER AGENT CONNECTOR]: Null reply on DoCreateChildAgentCall post");
+                    MainConsole.Instance.Info ("[USER AGENT CONNECTOR]: Null reply on DoCreateChildAgentCall post");
                 }
                 else
                 {
 
                     sr = new StreamReader (webResponse.GetResponseStream ());
                     string response = sr.ReadToEnd ().Trim ();
-                    m_log.InfoFormat ("[USER AGENT CONNECTOR]: DoCreateChildAgentCall reply was {0} ", response);
+                    MainConsole.Instance.InfoFormat ("[USER AGENT CONNECTOR]: DoCreateChildAgentCall reply was {0} ", response);
 
                     if (!String.IsNullOrEmpty (response))
                     {
@@ -200,7 +196,7 @@ namespace Aurora.Addon.Hypergrid
                         }
                         catch (NullReferenceException e)
                         {
-                            m_log.InfoFormat ("[USER AGENT CONNECTOR]: exception on reply of DoCreateChildAgentCall {0}", e.Message);
+                            MainConsole.Instance.InfoFormat ("[USER AGENT CONNECTOR]: exception on reply of DoCreateChildAgentCall {0}", e.Message);
 
                             // check for old style response
                             if (response.ToLower ().StartsWith ("true"))
@@ -213,7 +209,7 @@ namespace Aurora.Addon.Hypergrid
             }
             catch (WebException ex)
             {
-                m_log.InfoFormat ("[USER AGENT CONNECTOR]: exception on reply of DoCreateChildAgentCall {0}", ex.Message);
+                MainConsole.Instance.InfoFormat ("[USER AGENT CONNECTOR]: exception on reply of DoCreateChildAgentCall {0}", ex.Message);
                 reason = "Destination did not reply";
                 return false;
             }
@@ -243,7 +239,7 @@ namespace Aurora.Addon.Hypergrid
             }
             catch (Exception e)
             {
-                m_log.Debug ("[USER AGENT CONNECTOR]: PackAgentCircuitData failed with exception: " + e.Message);
+                MainConsole.Instance.Debug ("[USER AGENT CONNECTOR]: PackAgentCircuitData failed with exception: " + e.Message);
             }
             // Add the input arguments
             args["gatekeeper_serveruri"] = OSD.FromString (gatekeeper.ServerURI);
@@ -303,7 +299,7 @@ namespace Aurora.Addon.Hypergrid
 
             hash = (Hashtable)response.Value;
             //foreach (Object o in hash)
-            //    m_log.Debug(">> " + ((DictionaryEntry)o).Key + ":" + ((DictionaryEntry)o).Value);
+            //    MainConsole.Instance.Debug(">> " + ((DictionaryEntry)o).Key + ":" + ((DictionaryEntry)o).Value);
             try
             {
                 bool success = false;
@@ -313,24 +309,24 @@ namespace Aurora.Addon.Hypergrid
                     GridRegion region = new GridRegion ();
 
                     UUID.TryParse ((string)hash["uuid"], out region.RegionID);
-                    //m_log.Debug(">> HERE, uuid: " + region.RegionID);
+                    //MainConsole.Instance.Debug(">> HERE, uuid: " + region.RegionID);
                     int n = 0;
                     if (hash["x"] != null)
                     {
                         Int32.TryParse ((string)hash["x"], out n);
                         region.RegionLocX = n;
-                        //m_log.Debug(">> HERE, x: " + region.RegionLocX);
+                        //MainConsole.Instance.Debug(">> HERE, x: " + region.RegionLocX);
                     }
                     if (hash["y"] != null)
                     {
                         Int32.TryParse ((string)hash["y"], out n);
                         region.RegionLocY = n;
-                        //m_log.Debug(">> HERE, y: " + region.RegionLocY);
+                        //MainConsole.Instance.Debug(">> HERE, y: " + region.RegionLocY);
                     }
                     if (hash["region_name"] != null)
                     {
                         region.RegionName = (string)hash["region_name"];
-                        //m_log.Debug(">> HERE, name: " + region.RegionName);
+                        //MainConsole.Instance.Debug(">> HERE, name: " + region.RegionName);
                     }
                     if (hash["hostname"] != null)
                         region.ExternalHostName = (string)hash["hostname"];
@@ -458,26 +454,26 @@ namespace Aurora.Addon.Hypergrid
             }
             catch (Exception e)
             {
-                m_log.DebugFormat ("[USER AGENT CONNECTOR]: Unable to contact remote server {0}", m_ServerURL);
+                MainConsole.Instance.DebugFormat ("[USER AGENT CONNECTOR]: Unable to contact remote server {0}", m_ServerURL);
                 reason = "Exception: " + e.Message;
                 return friendsOnline;
             }
 
             if (response.IsFault)
             {
-                m_log.ErrorFormat ("[USER AGENT CONNECTOR]: remote call to {0} returned an error: {1}", m_ServerURL, response.FaultString);
+                MainConsole.Instance.ErrorFormat ("[USER AGENT CONNECTOR]: remote call to {0} returned an error: {1}", m_ServerURL, response.FaultString);
                 reason = "XMLRPC Fault";
                 return friendsOnline;
             }
 
             hash = (Hashtable)response.Value;
             //foreach (Object o in hash)
-            //    m_log.Debug(">> " + ((DictionaryEntry)o).Key + ":" + ((DictionaryEntry)o).Value);
+            //    MainConsole.Instance.Debug(">> " + ((DictionaryEntry)o).Key + ":" + ((DictionaryEntry)o).Value);
             try
             {
                 if (hash == null)
                 {
-                    m_log.ErrorFormat ("[USER AGENT CONNECTOR]: GetOnlineFriends Got null response from {0}! THIS IS BAAAAD", m_ServerURL);
+                    MainConsole.Instance.ErrorFormat ("[USER AGENT CONNECTOR]: GetOnlineFriends Got null response from {0}! THIS IS BAAAAD", m_ServerURL);
                     reason = "Internal error 1";
                     return friendsOnline;
                 }
@@ -496,7 +492,7 @@ namespace Aurora.Addon.Hypergrid
             }
             catch (Exception e)
             {
-                m_log.ErrorFormat ("[USER AGENT CONNECTOR]: Got exception on GetOnlineFriends response.");
+                MainConsole.Instance.ErrorFormat ("[USER AGENT CONNECTOR]: Got exception on GetOnlineFriends response.");
                 reason = "Exception: " + e.Message;
             }
 
@@ -529,26 +525,26 @@ namespace Aurora.Addon.Hypergrid
             }
             catch (Exception e)
             {
-                m_log.DebugFormat ("[USER AGENT CONNECTOR]: Unable to contact remote server {0}", m_ServerURL);
+                MainConsole.Instance.DebugFormat ("[USER AGENT CONNECTOR]: Unable to contact remote server {0}", m_ServerURL);
                 reason = "Exception: " + e.Message;
                 return online;
             }
 
             if (response.IsFault)
             {
-                m_log.ErrorFormat ("[USER AGENT CONNECTOR]: remote call to {0} returned an error: {1}", m_ServerURL, response.FaultString);
+                MainConsole.Instance.ErrorFormat ("[USER AGENT CONNECTOR]: remote call to {0} returned an error: {1}", m_ServerURL, response.FaultString);
                 reason = "XMLRPC Fault";
                 return online;
             }
 
             hash = (Hashtable)response.Value;
             //foreach (Object o in hash)
-            //    m_log.Debug(">> " + ((DictionaryEntry)o).Key + ":" + ((DictionaryEntry)o).Value);
+            //    MainConsole.Instance.Debug(">> " + ((DictionaryEntry)o).Key + ":" + ((DictionaryEntry)o).Value);
             try
             {
                 if (hash == null)
                 {
-                    m_log.ErrorFormat ("[USER AGENT CONNECTOR]: GetOnlineFriends Got null response from {0}! THIS IS BAAAAD", m_ServerURL);
+                    MainConsole.Instance.ErrorFormat ("[USER AGENT CONNECTOR]: GetOnlineFriends Got null response from {0}! THIS IS BAAAAD", m_ServerURL);
                     reason = "Internal error 1";
                     return online;
                 }
@@ -567,7 +563,7 @@ namespace Aurora.Addon.Hypergrid
             }
             catch (Exception e)
             {
-                m_log.ErrorFormat ("[USER AGENT CONNECTOR]: Got exception on GetOnlineFriends response.");
+                MainConsole.Instance.ErrorFormat ("[USER AGENT CONNECTOR]: Got exception on GetOnlineFriends response.");
                 reason = "Exception: " + e.Message;
             }
 
@@ -594,26 +590,26 @@ namespace Aurora.Addon.Hypergrid
             }
             catch (Exception e)
             {
-                m_log.DebugFormat ("[USER AGENT CONNECTOR]: Unable to contact remote server {0}", m_ServerURL);
+                MainConsole.Instance.DebugFormat ("[USER AGENT CONNECTOR]: Unable to contact remote server {0}", m_ServerURL);
                 reason = "Exception: " + e.Message;
                 return serverURLs;
             }
 
             if (response.IsFault)
             {
-                m_log.ErrorFormat ("[USER AGENT CONNECTOR]: remote call to {0} returned an error: {1}", m_ServerURL, response.FaultString);
+                MainConsole.Instance.ErrorFormat ("[USER AGENT CONNECTOR]: remote call to {0} returned an error: {1}", m_ServerURL, response.FaultString);
                 reason = "XMLRPC Fault";
                 return serverURLs;
             }
 
             hash = (Hashtable)response.Value;
             //foreach (Object o in hash)
-            //    m_log.Debug(">> " + ((DictionaryEntry)o).Key + ":" + ((DictionaryEntry)o).Value);
+            //    MainConsole.Instance.Debug(">> " + ((DictionaryEntry)o).Key + ":" + ((DictionaryEntry)o).Value);
             try
             {
                 if (hash == null)
                 {
-                    m_log.ErrorFormat ("[USER AGENT CONNECTOR]: GetServerURLs Got null response from {0}! THIS IS BAAAAD", m_ServerURL);
+                    MainConsole.Instance.ErrorFormat ("[USER AGENT CONNECTOR]: GetServerURLs Got null response from {0}! THIS IS BAAAAD", m_ServerURL);
                     reason = "Internal error 1";
                     return serverURLs;
                 }
@@ -631,7 +627,7 @@ namespace Aurora.Addon.Hypergrid
             }
             catch (Exception e)
             {
-                m_log.ErrorFormat ("[USER AGENT CONNECTOR]: Got exception on GetOnlineFriends response.");
+                MainConsole.Instance.ErrorFormat ("[USER AGENT CONNECTOR]: Got exception on GetOnlineFriends response.");
                 reason = "Exception: " + e.Message;
             }
 
@@ -658,26 +654,26 @@ namespace Aurora.Addon.Hypergrid
             }
             catch (Exception e)
             {
-                m_log.DebugFormat ("[USER AGENT CONNECTOR]: Unable to contact remote server {0}", m_ServerURL);
+                MainConsole.Instance.DebugFormat ("[USER AGENT CONNECTOR]: Unable to contact remote server {0}", m_ServerURL);
                 reason = "Exception: " + e.Message;
                 return url;
             }
 
             if (response.IsFault)
             {
-                m_log.ErrorFormat ("[USER AGENT CONNECTOR]: remote call to {0} returned an error: {1}", m_ServerURL, response.FaultString);
+                MainConsole.Instance.ErrorFormat ("[USER AGENT CONNECTOR]: remote call to {0} returned an error: {1}", m_ServerURL, response.FaultString);
                 reason = "XMLRPC Fault";
                 return url;
             }
 
             hash = (Hashtable)response.Value;
             //foreach (Object o in hash)
-            //    m_log.Debug(">> " + ((DictionaryEntry)o).Key + ":" + ((DictionaryEntry)o).Value);
+            //    MainConsole.Instance.Debug(">> " + ((DictionaryEntry)o).Key + ":" + ((DictionaryEntry)o).Value);
             try
             {
                 if (hash == null)
                 {
-                    m_log.ErrorFormat ("[USER AGENT CONNECTOR]: LocateUser Got null response from {0}! THIS IS BAAAAD", m_ServerURL);
+                    MainConsole.Instance.ErrorFormat ("[USER AGENT CONNECTOR]: LocateUser Got null response from {0}! THIS IS BAAAAD", m_ServerURL);
                     reason = "Internal error 1";
                     return url;
                 }
@@ -689,7 +685,7 @@ namespace Aurora.Addon.Hypergrid
             }
             catch (Exception e)
             {
-                m_log.ErrorFormat ("[USER AGENT CONNECTOR]: Got exception on LocateUser response.");
+                MainConsole.Instance.ErrorFormat ("[USER AGENT CONNECTOR]: Got exception on LocateUser response.");
                 reason = "Exception: " + e.Message;
             }
 
@@ -717,26 +713,26 @@ namespace Aurora.Addon.Hypergrid
             }
             catch (Exception e)
             {
-                m_log.DebugFormat ("[USER AGENT CONNECTOR]: Unable to contact remote server {0}", m_ServerURL);
+                MainConsole.Instance.DebugFormat ("[USER AGENT CONNECTOR]: Unable to contact remote server {0}", m_ServerURL);
                 reason = "Exception: " + e.Message;
                 return uui;
             }
 
             if (response.IsFault)
             {
-                m_log.ErrorFormat ("[USER AGENT CONNECTOR]: remote call to {0} returned an error: {1}", m_ServerURL, response.FaultString);
+                MainConsole.Instance.ErrorFormat ("[USER AGENT CONNECTOR]: remote call to {0} returned an error: {1}", m_ServerURL, response.FaultString);
                 reason = "XMLRPC Fault";
                 return uui;
             }
 
             hash = (Hashtable)response.Value;
             //foreach (Object o in hash)
-            //    m_log.Debug(">> " + ((DictionaryEntry)o).Key + ":" + ((DictionaryEntry)o).Value);
+            //    MainConsole.Instance.Debug(">> " + ((DictionaryEntry)o).Key + ":" + ((DictionaryEntry)o).Value);
             try
             {
                 if (hash == null)
                 {
-                    m_log.ErrorFormat ("[USER AGENT CONNECTOR]: GetUUI Got null response from {0}! THIS IS BAAAAD", m_ServerURL);
+                    MainConsole.Instance.ErrorFormat ("[USER AGENT CONNECTOR]: GetUUI Got null response from {0}! THIS IS BAAAAD", m_ServerURL);
                     reason = "Internal error 1";
                     return uui;
                 }
@@ -748,7 +744,7 @@ namespace Aurora.Addon.Hypergrid
             }
             catch (Exception e)
             {
-                m_log.ErrorFormat ("[USER AGENT CONNECTOR]: Got exception on LocateUser response.");
+                MainConsole.Instance.ErrorFormat ("[USER AGENT CONNECTOR]: Got exception on LocateUser response.");
                 reason = "Exception: " + e.Message;
             }
 
@@ -757,7 +753,7 @@ namespace Aurora.Addon.Hypergrid
 
         private bool GetBoolResponse (XmlRpcRequest request, out string reason)
         {
-            //m_log.Debug("[USER AGENT CONNECTOR]: GetBoolResponse from/to " + m_ServerURL);
+            //MainConsole.Instance.Debug("[USER AGENT CONNECTOR]: GetBoolResponse from/to " + m_ServerURL);
             XmlRpcResponse response = null;
             try
             {
@@ -765,26 +761,26 @@ namespace Aurora.Addon.Hypergrid
             }
             catch (Exception e)
             {
-                m_log.DebugFormat ("[USER AGENT CONNECTOR]: Unable to contact remote server {0}", m_ServerURL);
+                MainConsole.Instance.DebugFormat ("[USER AGENT CONNECTOR]: Unable to contact remote server {0}", m_ServerURL);
                 reason = "Exception: " + e.Message;
                 return false;
             }
 
             if (response.IsFault)
             {
-                m_log.ErrorFormat ("[USER AGENT CONNECTOR]: remote call to {0} returned an error: {1}", m_ServerURL, response.FaultString);
+                MainConsole.Instance.ErrorFormat ("[USER AGENT CONNECTOR]: remote call to {0} returned an error: {1}", m_ServerURL, response.FaultString);
                 reason = "XMLRPC Fault";
                 return false;
             }
 
             Hashtable hash = (Hashtable)response.Value;
             //foreach (Object o in hash)
-            //    m_log.Debug(">> " + ((DictionaryEntry)o).Key + ":" + ((DictionaryEntry)o).Value);
+            //    MainConsole.Instance.Debug(">> " + ((DictionaryEntry)o).Key + ":" + ((DictionaryEntry)o).Value);
             try
             {
                 if (hash == null)
                 {
-                    m_log.ErrorFormat ("[USER AGENT CONNECTOR]: Got null response from {0}! THIS IS BAAAAD", m_ServerURL);
+                    MainConsole.Instance.ErrorFormat ("[USER AGENT CONNECTOR]: Got null response from {0}! THIS IS BAAAAD", m_ServerURL);
                     reason = "Internal error 1";
                     return false;
                 }
@@ -795,16 +791,16 @@ namespace Aurora.Addon.Hypergrid
                 else
                 {
                     reason = "Internal error 2";
-                    m_log.WarnFormat ("[USER AGENT CONNECTOR]: response from {0} does not have expected key 'result'", m_ServerURL);
+                    MainConsole.Instance.WarnFormat ("[USER AGENT CONNECTOR]: response from {0} does not have expected key 'result'", m_ServerURL);
                 }
 
                 return success;
             }
             catch (Exception e)
             {
-                m_log.ErrorFormat ("[USER AGENT CONNECTOR]: Got exception on GetBoolResponse response.");
+                MainConsole.Instance.ErrorFormat ("[USER AGENT CONNECTOR]: Got exception on GetBoolResponse response.");
                 if (hash.ContainsKey ("result") && hash["result"] != null)
-                    m_log.ErrorFormat ("Reply was ", (string)hash["result"]);
+                    MainConsole.Instance.ErrorFormat ("Reply was ", (string)hash["result"]);
                 reason = "Exception: " + e.Message;
                 return false;
             }

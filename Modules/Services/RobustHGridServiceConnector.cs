@@ -100,7 +100,7 @@ namespace Aurora.Addon.Hypergrid
             if (handlerConfig.GetString("GridHandler", "") != Name)
                 return;
 
-            //m_log.DebugFormat("[GRID SERVICE]: Starting...");
+            //MainConsole.Instance.DebugFormat("[GRID SERVICE]: Starting...");
             Configure(config, registry);
         }
 

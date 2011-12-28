@@ -47,9 +47,6 @@ namespace Aurora.Addon.Hypergrid
 {
     public class InstantMessageServerConnector : IService
     {
-        private static readonly ILog m_log =
-                LogManager.GetLogger (
-                MethodBase.GetCurrentMethod ().DeclaringType);
         private IRegistryCore m_registry;
 
         protected virtual XmlRpcResponse ProcessInstantMessage (XmlRpcRequest request, IPEndPoint remoteClient)
@@ -76,7 +73,7 @@ namespace Aurora.Addon.Hypergrid
                 float pos_x = 0;
                 float pos_y = 0;
                 float pos_z = 0;
-                //m_log.Info("Processing IM");
+                //MainConsole.Instance.Info("Processing IM");
 
 
                 Hashtable requestData = (Hashtable)request.Params[0];
@@ -192,7 +189,7 @@ namespace Aurora.Addon.Hypergrid
             }
             catch (Exception e)
             {
-                m_log.Error ("[INSTANT MESSAGE]: Caught unexpected exception:", e);
+                MainConsole.Instance.Error ("[INSTANT MESSAGE]: Caught unexpected exception:", e);
                 successful = false;
             }
 
@@ -247,7 +244,7 @@ namespace Aurora.Addon.Hypergrid
                         //Remove them so we keep testing against the db
                         IMUsersCache.Remove (gim.toAgentID);
                     }
-                    m_log.Info ("[GRID INSTANT MESSAGE]: Unable to deliver an instant message as the region could not be found");
+                    MainConsole.Instance.Info ("[GRID INSTANT MESSAGE]: Unable to deliver an instant message as the region could not be found");
                     return false;
                 }
                 else
@@ -299,7 +296,7 @@ namespace Aurora.Addon.Hypergrid
             }
             catch (WebException e)
             {
-                m_log.ErrorFormat ("[GRID INSTANT MESSAGE]: Error sending message to " + httpInfo, e.Message);
+                MainConsole.Instance.ErrorFormat ("[GRID INSTANT MESSAGE]: Error sending message to " + httpInfo, e.Message);
             }
 
             return false;

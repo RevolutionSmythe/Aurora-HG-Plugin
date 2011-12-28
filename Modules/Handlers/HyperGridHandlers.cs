@@ -36,19 +36,18 @@ using GridRegion = OpenSim.Services.Interfaces.GridRegion;
 using log4net;
 using Nwc.XmlRpc;
 using OpenMetaverse;
+using OpenSim.Framework;
 
 namespace Aurora.Addon.Hypergrid
 {
     public class HypergridHandlers
     {
-        private static readonly ILog m_log = LogManager.GetLogger (MethodBase.GetCurrentMethod ().DeclaringType);
-
         private IGatekeeperService m_GatekeeperService;
 
         public HypergridHandlers (IGatekeeperService gatekeeper)
         {
             m_GatekeeperService = gatekeeper;
-            m_log.DebugFormat ("[HYPERGRID HANDLERS]: Active");
+            MainConsole.Instance.DebugFormat ("[HYPERGRID HANDLERS]: Active");
         }
 
         /// <summary>

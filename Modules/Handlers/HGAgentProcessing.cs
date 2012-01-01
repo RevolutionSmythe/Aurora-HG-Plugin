@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using OpenSim.Framework;
-using OpenSim.Framework.Capabilities;
-using OpenSim.Services.Interfaces;
 using Aurora.Framework;
+using Aurora.Framework.Capabilities;
 using Aurora.Simulation.Base;
 using OpenSim.Services.MessagingService;
 using Nini.Config;
@@ -14,6 +12,7 @@ using System.IO;
 using System.Net;
 using System.Threading;
 using GridRegion = OpenSim.Services.Interfaces.GridRegion;
+using OpenSim.Services.Interfaces;
 
 namespace Aurora.Addon.Hypergrid
 {

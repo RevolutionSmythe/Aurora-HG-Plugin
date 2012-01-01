@@ -25,14 +25,13 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-using log4net;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using Nini.Config;
-using OpenSim.Framework;
-using OpenSim.Framework.Servers.HttpServer;
+using Aurora.Framework;
+using Aurora.Framework.Servers.HttpServer;
 using OpenSim.Services.Interfaces;
 using FriendInfo = OpenSim.Services.Interfaces.FriendInfo;
 using Aurora.Framework;

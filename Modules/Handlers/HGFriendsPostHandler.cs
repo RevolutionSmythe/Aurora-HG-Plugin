@@ -26,7 +26,6 @@
  */
 
 using Nini.Config;
-using log4net;
 using System;
 using System.Reflection;
 using System.IO;
@@ -38,8 +37,8 @@ using System.Xml.Serialization;
 using System.Collections.Generic;
 using OpenSim.Services.Interfaces;
 using FriendInfo = OpenSim.Services.Interfaces.FriendInfo;
-using OpenSim.Framework;
-using OpenSim.Framework.Servers.HttpServer;
+using Aurora.Framework;
+using Aurora.Framework.Servers.HttpServer;
 using Aurora.Simulation.Base;
 using OpenMetaverse;
 

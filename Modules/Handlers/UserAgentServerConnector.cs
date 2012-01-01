@@ -32,15 +32,13 @@ using System.Net;
 using System.Reflection;
 
 using Nini.Config;
-using OpenSim.Framework;
-using OpenSim.Framework.Servers.HttpServer;
+using Aurora.Framework;
+using Aurora.Framework.Servers.HttpServer;
 using OpenSim.Services.Interfaces;
 using GridRegion = OpenSim.Services.Interfaces.GridRegion;
 using Aurora.Framework;
 using Aurora.DataManager;
 using Aurora.Simulation.Base;
-
-using log4net;
 using Nwc.XmlRpc;
 using OpenMetaverse;
 
@@ -104,7 +102,7 @@ namespace Aurora.Addon.Hypergrid
             server.AddXmlRPCHandler ("get_uui", GetUUI, false);
 
             m_HomeUsersService = registry.RequestModuleInterface<IUserAgentService> ();
-            Uri m_Uri = new Uri (server.HostName);
+            Uri m_Uri = new Uri (server.FullHostName);
             IPAddress ip = NetworkUtils.GetHostFromDNS(m_Uri.Host);
             string sip = ip.ToString ();
             server.AddHTTPHandler ("/homeagent", new HomeAgentHandler (m_HomeUsersService, sip, proxy).Handler);

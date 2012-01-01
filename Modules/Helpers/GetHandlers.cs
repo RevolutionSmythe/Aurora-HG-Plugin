@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using OpenSim.Framework;
+using Aurora.Framework;
 using OpenMetaverse;
 using OpenSim.Services.Interfaces;
 
@@ -18,10 +18,10 @@ namespace Aurora.Addon.Hypergrid
         public static string Helpers_IMServerURI = "IMServerURI";
 
 
-        public static string PROFILE_URL = MainServer.Instance.HostName + ":" + MainServer.Instance.Port + "/profiles";
-        public static string GATEKEEPER_URL = MainServer.Instance.HostName + ":" + MainServer.Instance.Port + "/";
+        public static string PROFILE_URL = MainServer.Instance.FullHostName + ":" + MainServer.Instance.Port + "/profiles";
+        public static string GATEKEEPER_URL = MainServer.Instance.FullHostName + ":" + MainServer.Instance.Port + "/";
         public static uint IM_PORT = MainServer.Instance.Port;
-        public static string IM_URL = MainServer.Instance.HostName + ":" + IM_PORT + "/";
+        public static string IM_URL = MainServer.Instance.FullHostName + ":" + IM_PORT + "/";
 
         public static bool GetIsForeign (string AgentID, string server, IRegistryCore registry, out string serverURL)
         {

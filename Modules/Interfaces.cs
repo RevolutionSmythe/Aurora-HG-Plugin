@@ -2,9 +2,6 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
-using OpenSim.Framework;
-using OpenSim.Framework.Servers.HttpServer;
-using OpenSim.Services.Interfaces;
 using Aurora.Framework;
 using Aurora.Simulation.Base;
 using OpenMetaverse;

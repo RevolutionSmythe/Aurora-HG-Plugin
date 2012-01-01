@@ -33,10 +33,9 @@ using System.Reflection;
 using OpenSim.Services.Interfaces;
 using GridRegion = OpenSim.Services.Interfaces.GridRegion;
 
-using log4net;
 using Nwc.XmlRpc;
 using OpenMetaverse;
-using OpenSim.Framework;
+using Aurora.Framework;
 
 namespace Aurora.Addon.Hypergrid
 {

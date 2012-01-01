@@ -34,9 +34,8 @@ using System.Reflection;
 using System.Xml;
 
 using Nini.Config;
-using log4net;
-using OpenSim.Framework;
-using OpenSim.Framework.Servers.HttpServer;
+using Aurora.Framework;
+using Aurora.Framework.Servers.HttpServer;
 using OpenSim.Services.Interfaces;
 using GridRegion = OpenSim.Services.Interfaces.GridRegion;
 using OpenMetaverse;
@@ -116,7 +115,7 @@ namespace Aurora.Addon.Hypergrid
             hgConfig = config.Configs["GatekeeperService"];
 
             IHttpServer server = MainServer.Instance;
-            m_ThisGatekeeperURI = new Uri (server.HostName + ":" + server.Port);
+            m_ThisGatekeeperURI = new Uri (server.FullHostName + ":" + server.Port);
 
             if (!string.IsNullOrEmpty (m_MapTileDirectory))
             {

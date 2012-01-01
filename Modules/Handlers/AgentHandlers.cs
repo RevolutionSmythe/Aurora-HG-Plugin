@@ -34,13 +34,11 @@ using System.Net;
 using System.Text;
 using OpenSim.Services.Interfaces;
 using GridRegion = OpenSim.Services.Interfaces.GridRegion;
-using OpenSim.Framework;
-using OpenSim.Framework.Servers.HttpServer;
-
+using Aurora.Framework;
+using Aurora.Framework.Servers.HttpServer;
 using OpenMetaverse;
 using OpenMetaverse.StructuredData;
 using Nini.Config;
-using log4net;
 using Aurora.Framework;
 using Aurora.DataManager;
 using Aurora.Simulation.Base;

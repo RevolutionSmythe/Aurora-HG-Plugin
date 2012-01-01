@@ -32,13 +32,12 @@ using System.Net;
 using System.Reflection;
 
 using Nini.Config;
-using OpenSim.Framework;
+using Aurora.Framework;
 using OpenSim.Services.Interfaces;
-using OpenSim.Framework.Servers.HttpServer;
+using Aurora.Framework.Servers.HttpServer;
 using GridRegion = OpenSim.Services.Interfaces.GridRegion;
 using Aurora.Simulation.Base;
 
-using log4net;
 using Nwc.XmlRpc;
 using OpenMetaverse;
 using OpenMetaverse.StructuredData;

@@ -30,8 +30,8 @@ using System.Collections.Generic;
 using System.Net;
 using System.Reflection;
 
-using OpenSim.Framework;
-using OpenSim.Framework.Servers.HttpServer;
+using Aurora.Framework;
+using Aurora.Framework.Servers.HttpServer;
 using OpenSim.Services.Interfaces;
 using GridRegion = OpenSim.Services.Interfaces.GridRegion;
 using FriendInfo = OpenSim.Services.Interfaces.FriendInfo;
@@ -40,7 +40,6 @@ using Aurora.DataManager;
 using Aurora.Simulation.Base;
 
 using OpenMetaverse;
-using log4net;
 using Nini.Config;
 
 namespace Aurora.Addon.Hypergrid
@@ -97,7 +96,7 @@ namespace Aurora.Addon.Hypergrid
             if (m_GridName == string.Empty)
             {
                 IHttpServer server = MainServer.Instance;
-                m_GridName = server.HostName + ":" + server.Port + "/";
+                m_GridName = server.FullHostName + ":" + server.Port + "/";
             }
         }
 

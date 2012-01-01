@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Nini.Config;
-using OpenSim.Framework;
+using Aurora.Framework;
 using OpenSim.Services.Interfaces;
 using OpenSim.Services;
 using OpenMetaverse;

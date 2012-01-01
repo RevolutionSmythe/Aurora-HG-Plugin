@@ -1,10 +1,9 @@
 ﻿using OpenMetaverse;
-using OpenSim.Framework;
+using Aurora.Framework;
 using System;
 using System.Collections.Generic;
 using OpenSim.Services.Interfaces;
 using Nini.Config;
-using log4net;
 using FriendInfo = OpenSim.Services.Interfaces.FriendInfo;
 using Aurora.Framework;
 using Aurora.Simulation.Base;

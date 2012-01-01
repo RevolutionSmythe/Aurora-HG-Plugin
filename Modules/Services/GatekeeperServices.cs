@@ -31,8 +31,8 @@ using System.Net;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
-using OpenSim.Framework;
-using OpenSim.Framework.Servers.HttpServer;
+using Aurora.Framework;
+using Aurora.Framework.Servers.HttpServer;
 using OpenSim.Services.Interfaces;
 using GridRegion = OpenSim.Services.Interfaces.GridRegion;
 
@@ -40,7 +40,6 @@ using OpenMetaverse;
 using OpenMetaverse.StructuredData;
 
 using Nini.Config;
-using log4net;
 using Aurora.Framework;
 using Aurora.Simulation.Base;
 
@@ -85,7 +84,7 @@ namespace Aurora.Addon.Hypergrid
             m_registry = registry;
             
             IHttpServer server = MainServer.Instance;
-            m_ExternalName = server.HostName + ":" + server.Port + "/";
+            m_ExternalName = server.FullHostName + ":" + server.Port + "/";
             Uri m_Uri = new Uri (m_ExternalName);
             IPAddress ip = NetworkUtils.GetHostFromDNS(m_Uri.Host);
             m_ExternalName = m_ExternalName.Replace (m_Uri.Host, ip.ToString ());
@@ -359,8 +358,8 @@ namespace Aurora.Addon.Hypergrid
             if (m_CapsService != null)
             {
                 //Remove any previous users
-                string ServerCapsBase = OpenSim.Framework.Capabilities.CapsUtil.GetRandomCapsObjectPath ();
-                m_CapsService.CreateCAPS (aCircuit.AgentID, OpenSim.Framework.Capabilities.CapsUtil.GetCapsSeedPath (ServerCapsBase), destination.RegionHandle, true, aCircuit);
+                string ServerCapsBase = Aurora.Framework.Capabilities.CapsUtil.GetRandomCapsObjectPath ();
+                m_CapsService.CreateCAPS(aCircuit.AgentID, Aurora.Framework.Capabilities.CapsUtil.GetCapsSeedPath(ServerCapsBase), destination.RegionHandle, true, aCircuit);
 
                 regionClientCaps = m_CapsService.GetClientCapsService (aCircuit.AgentID).GetCapsService (destination.RegionHandle);
                 if (aCircuit.ServiceURLs == null)

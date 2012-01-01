@@ -34,8 +34,6 @@ using System.Text;
 
 using OpenSim.Services.Interfaces;
 using GridRegion = OpenSim.Services.Interfaces.GridRegion;
-using OpenSim.Framework;
-using OpenSim.Framework.Servers.HttpServer;
 using Aurora.Framework;
 using Aurora.DataManager;
 using Aurora.Simulation.Base;
@@ -43,7 +41,6 @@ using Aurora.Simulation.Base;
 using OpenMetaverse;
 using OpenMetaverse.StructuredData;
 using Nini.Config;
-using log4net;
 
 
 namespace Aurora.Addon.Hypergrid

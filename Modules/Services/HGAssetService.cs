@@ -31,11 +31,10 @@ using System.Reflection;
 using System.Xml;
 
 using Nini.Config;
-using log4net;
 using OpenMetaverse;
 
-using OpenSim.Framework;
-using OpenSim.Framework.Serialization.External;
+using Aurora.Framework;
+using Aurora.Framework.Serialization.External;
 using OpenSim.Services.Interfaces;
 using OpenSim.Services.AssetService;
 using OpenSim.Services;
@@ -138,8 +137,8 @@ namespace Aurora.Addon.Hypergrid
         {
             if (asset == null || asset.Metadata.URL != "")//Don't reappend
                 return;
-            asset.URL = MainServer.Instance.HostName + ":" + MainServer.Instance.Port + "/assets/" + asset.ID;
-            //asset.ID = MainServer.Instance.HostName + ":" + MainServer.Instance.Port + "/assets/" + asset.ID;
+            asset.URL = MainServer.Instance.FullHostName + ":" + MainServer.Instance.Port + "/assets/" + asset.ID;
+            //asset.ID = MainServer.Instance.FullHostName + ":" + MainServer.Instance.Port + "/assets/" + asset.ID;
         }*/
 
         protected void AdjustIdentifiers (AssetBase meta)

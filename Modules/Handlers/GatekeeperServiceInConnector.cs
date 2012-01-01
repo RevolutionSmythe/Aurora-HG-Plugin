@@ -29,14 +29,11 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Nini.Config;
-using OpenSim.Framework;
-using OpenSim.Services.Interfaces;
-using OpenSim.Framework.Servers.HttpServer;
 using Aurora.Framework;
 using Aurora.DataManager;
 using Aurora.Simulation.Base;
-
-using log4net;
+using OpenSim.Services.Interfaces;
+using Aurora.Framework.Servers.HttpServer;
 
 namespace Aurora.Addon.Hypergrid
 {

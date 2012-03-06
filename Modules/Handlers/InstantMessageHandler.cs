@@ -214,8 +214,8 @@ namespace Aurora.Addon.Hypergrid
         private bool SendIM (GridInstantMessage gim)
         {
             string HTTPPath = "";
-            string[] AgentLocations = m_registry.RequestModuleInterface<IAgentInfoService> ().GetAgentsLocations (gim.fromAgentID.ToString(), new string[] { gim.toAgentID.ToString () });
-            if (AgentLocations.Length > 0)
+            List<string> AgentLocations = m_registry.RequestModuleInterface<IAgentInfoService> ().GetAgentsLocations (gim.fromAgentID.ToString(), new List<string>() { gim.toAgentID.ToString () });
+            if (AgentLocations.Count > 0)
             {
                 //No agents, so this user is offline
                 if (AgentLocations[0] == "NotOnline")

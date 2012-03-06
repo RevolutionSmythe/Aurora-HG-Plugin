@@ -113,7 +113,7 @@ namespace Aurora.Addon.Hypergrid
             finfo.PrincipalID = PrincipalID;
             finfo.Friend = Friend;
 
-            Dictionary<string, object> sendData = finfo.ToKeyValuePairs ();
+            Dictionary<string, object> sendData = finfo.ToKVP ();
 
             sendData["METHOD"] = "newfriendship";
             sendData["KEY"] = m_ServiceKey;
@@ -159,7 +159,7 @@ namespace Aurora.Addon.Hypergrid
             finfo.PrincipalID = PrincipalID;
             finfo.Friend = Friend.ToString ();
 
-            Dictionary<string, object> sendData = finfo.ToKeyValuePairs ();
+            Dictionary<string, object> sendData = finfo.ToKVP();
 
             sendData["METHOD"] = "deletefriendship";
             sendData["SECRET"] = secret;

@@ -25,12 +25,12 @@ namespace Aurora.Addon.Hypergrid
             registry.RegisterModuleInterface<IAgentInfoService> (this);
         }
 
-        public override string[] GetAgentsLocations (string requestor, string[] userIDs)
+        public override List<string> GetAgentsLocations(string requestor, List<string> userIDs)
         {
             List<string> locations = new List<string> ();
             foreach (string userID in userIDs)
             {
-                string[] l = base.GetAgentsLocations (requestor, new string[1] { userID });
+                List<string> l = base.GetAgentsLocations(requestor, new List<string>() { userID });
                 if (l[0] == "NotOnline")
                 {
                     UserAccount acc = m_registry.RequestModuleInterface<IUserAccountService> ().GetUserAccount (UUID.Zero, UUID.Parse (userID));
@@ -44,7 +44,7 @@ namespace Aurora.Addon.Hypergrid
                 }
                 locations.Add (l[0]);
             }
-            return locations.ToArray ();
+            return locations;
         }
     }
 }

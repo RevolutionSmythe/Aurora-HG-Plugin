@@ -149,7 +149,7 @@ namespace Aurora.Addon.Hypergrid
                 return FailureResult ();
             }
 
-            FriendInfo[] friendsInfo = m_FriendsService.GetFriends (principalID);
+            List<FriendInfo> friendsInfo = m_FriendsService.GetFriends (principalID);
             foreach (FriendInfo finfo in friendsInfo)
             {
                 if (finfo.Friend.StartsWith (friendID.ToString ()))
@@ -175,7 +175,7 @@ namespace Aurora.Addon.Hypergrid
             MainConsole.Instance.DebugFormat ("[HGFRIENDS HANDLER]: New friendship {0} {1}", friend.PrincipalID, friend.Friend);
 
             // If the friendship already exists, return fail
-            FriendInfo[] finfos = m_FriendsService.GetFriends (friend.PrincipalID);
+            List<FriendInfo> finfos = m_FriendsService.GetFriends (friend.PrincipalID);
             foreach (FriendInfo finfo in finfos)
                 if (finfo.Friend.StartsWith (friendID.ToString ()))
                     return FailureResult ();
@@ -199,7 +199,7 @@ namespace Aurora.Addon.Hypergrid
             if (secret == string.Empty)
                 return FailureResult ();
 
-            FriendInfo[] finfos = m_FriendsService.GetFriends (friend.PrincipalID);
+            List<FriendInfo> finfos = m_FriendsService.GetFriends(friend.PrincipalID);
             foreach (FriendInfo finfo in finfos)
             {
                 // We check the secret here

@@ -406,7 +406,7 @@ namespace Aurora.Addon.Hypergrid
                 string secret = string.Empty, tmp = string.Empty;
                 if (HGUtil.ParseUniversalUserIdentifier (uui, out localUserID, out tmp, out tmp, out tmp, out secret))
                 {
-                    FriendInfo[] friendInfos = m_FriendsService.GetFriends (localUserID);
+                    List<FriendInfo> friendInfos = m_FriendsService.GetFriends (localUserID);
                     foreach (FriendInfo finfo in friendInfos)
                     {
                         if (finfo.Friend.StartsWith (foreignUserID.ToString ()) && finfo.Friend.EndsWith (secret))
@@ -424,7 +424,7 @@ namespace Aurora.Addon.Hypergrid
             // First, let's send notifications to local users who are online in the home grid
 
             //Send "" because if we pass the UUID, it will get the locations for all friends, even on the grid they came from
-            UserInfo[] friendSessions = m_PresenceService.GetUserInfos (usersToBeNotified.ToArray ());
+            List<UserInfo> friendSessions = m_PresenceService.GetUserInfos (usersToBeNotified);
             foreach (UserInfo friend in friendSessions)
             {
                 if (friend.IsOnline)
@@ -478,7 +478,7 @@ namespace Aurora.Addon.Hypergrid
                 string secret = string.Empty, tmp = string.Empty;
                 if (HGUtil.ParseUniversalUserIdentifier (uui, out localUserID, out tmp, out tmp, out tmp, out secret))
                 {
-                    FriendInfo[] friendInfos = m_FriendsService.GetFriends (localUserID);
+                    List<FriendInfo> friendInfos = m_FriendsService.GetFriends (localUserID);
                     foreach (FriendInfo finfo in friendInfos)
                     {
                         if (finfo.Friend.StartsWith (foreignUserID.ToString ()) && finfo.Friend.EndsWith (secret) &&
@@ -495,8 +495,8 @@ namespace Aurora.Addon.Hypergrid
             MainConsole.Instance.DebugFormat ("[USER AGENT SERVICE]: GetOnlineFriends: user has {0} local friends with status rights", usersToBeNotified.Count);
 
             // First, let's send notifications to local users who are online in the home grid
-            UserInfo[] friendSessions = m_PresenceService.GetUserInfos (usersToBeNotified.ToArray ());
-            if (friendSessions != null && friendSessions.Length > 0)
+            List<UserInfo> friendSessions = m_PresenceService.GetUserInfos (usersToBeNotified);
+            if (friendSessions != null && friendSessions.Count > 0)
             {
                 foreach (UserInfo pi in friendSessions)
                 {
@@ -547,8 +547,8 @@ namespace Aurora.Addon.Hypergrid
                 return targetUserID.ToString () + ";" + m_GridName + ";" + account.FirstName + " " + account.LastName;
 
             // Let's try the list of friends
-            FriendInfo[] friends = m_FriendsService.GetFriends (userID);
-            if (friends != null && friends.Length > 0)
+            List<FriendInfo> friends = m_FriendsService.GetFriends(userID);
+            if (friends != null && friends.Count > 0)
             {
                 foreach (FriendInfo f in friends)
                     if (f.Friend.StartsWith (targetUserID.ToString ()))

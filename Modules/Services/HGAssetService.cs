@@ -73,7 +73,8 @@ namespace Aurora.Addon.Hypergrid
             if (handlerConfig.GetString ("AssetHandler", "") != Name)
                 return;
 
-            registry.RegisterModuleInterface<IAssetService> (this);
+            registry.RegisterModuleInterface<IAssetService>(this);
+            Init(registry, Name);
         }
 
         public override void Start (IConfigSource config, IRegistryCore registry)
@@ -92,7 +93,8 @@ namespace Aurora.Addon.Hypergrid
 
         #region IAssetService overrides
 
-        public override AssetBase Get (string id)
+        [CanBeReflected(ThreatLevel = OpenSim.Services.Interfaces.ThreatLevel.Low)]
+        public override AssetBase Get(string id)
         {
             AssetBase asset = base.Get (id);
 
@@ -107,7 +109,8 @@ namespace Aurora.Addon.Hypergrid
             return asset;
         }
 
-        public override byte[] GetData (string id)
+        [CanBeReflected(ThreatLevel = OpenSim.Services.Interfaces.ThreatLevel.Low)]
+        public override byte[] GetData(string id)
         {
             byte[] data = base.GetData (id);
 
@@ -117,7 +120,8 @@ namespace Aurora.Addon.Hypergrid
             return AdjustIdentifiers (data);
         }
 
-        public override AssetBase GetCached (string id)
+        [CanBeReflected(ThreatLevel = OpenSim.Services.Interfaces.ThreatLevel.Low)]
+        public override AssetBase GetCached(string id)
         {
             AssetBase asset = base.GetCached (id);
             if(asset != null)
@@ -125,10 +129,35 @@ namespace Aurora.Addon.Hypergrid
             return asset;
         }
 
-        public override bool Delete (UUID id)
+        [CanBeReflected(ThreatLevel = OpenSim.Services.Interfaces.ThreatLevel.Full)]
+        public override bool Delete(UUID id)
         {
             // NOGO
             return false;
+        }
+
+        [CanBeReflected(ThreatLevel = OpenSim.Services.Interfaces.ThreatLevel.Low)]
+        public override UUID Store(AssetBase asset)
+        {
+            return base.Store(asset);
+        }
+
+        [CanBeReflected(ThreatLevel = OpenSim.Services.Interfaces.ThreatLevel.Low)]
+        public override void Get(string id, object sender, AssetRetrieved handler)
+        {
+            base.Get(id, sender, handler);
+        }
+
+        [CanBeReflected(ThreatLevel = OpenSim.Services.Interfaces.ThreatLevel.Low)]
+        public override bool GetExists(string id)
+        {
+            return base.GetExists(id);
+        }
+
+        [CanBeReflected(ThreatLevel = OpenSim.Services.Interfaces.ThreatLevel.Low)]
+        public override UUID UpdateContent(UUID id, byte[] data)
+        {
+            return base.UpdateContent(id, data);
         }
 
         #endregion

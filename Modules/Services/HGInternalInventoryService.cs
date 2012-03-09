@@ -47,8 +47,6 @@ namespace Aurora.Addon.Hypergrid
     /// </summary>
     public class HGInternalInventoryService : InventoryService
     {
-        private IRegistryCore m_registry;
-
         public override void Initialize (IConfigSource config, IRegistryCore registry)
         {
             IConfig hgConfig = config.Configs["HyperGrid"];
@@ -62,7 +60,8 @@ namespace Aurora.Addon.Hypergrid
             m_registry = registry;
             m_UserAccountService = registry.RequestModuleInterface<IUserAccountService> ();
 
-            registry.RegisterModuleInterface<IInventoryService> (this);
+            registry.RegisterModuleInterface<IInventoryService>(this);
+            Init(registry, Name);
         }
 
         public override void FinishedStartup ()
@@ -72,7 +71,8 @@ namespace Aurora.Addon.Hypergrid
             base.FinishedStartup ();
         }
 
-        public override bool AddItem (InventoryItemBase item)
+        [CanBeReflected(ThreatLevel = OpenSim.Services.Interfaces.ThreatLevel.Low)]
+        public override bool AddItem(InventoryItemBase item)
         {
             string invserverURL = "";
             if (GetHandlers.GetIsForeign (item.Owner, "InventoryServerURI", m_registry, out invserverURL))
@@ -84,7 +84,8 @@ namespace Aurora.Addon.Hypergrid
             return base.AddItem (item);
         }
 
-        public override bool AddFolder (InventoryFolderBase folder)
+        [CanBeReflected(ThreatLevel = OpenSim.Services.Interfaces.ThreatLevel.Low)]
+        public override bool AddFolder(InventoryFolderBase folder)
         {
             string invserverURL = "";
             if (GetHandlers.GetIsForeign (folder.Owner, "InventoryServerURI", m_registry, out invserverURL))
@@ -95,7 +96,8 @@ namespace Aurora.Addon.Hypergrid
             return base.AddFolder (folder);
         }
 
-        public override InventoryFolderBase GetFolderForType (UUID principalID, InventoryType invType, AssetType type)
+        [CanBeReflected(ThreatLevel = OpenSim.Services.Interfaces.ThreatLevel.Low)]
+        public override InventoryFolderBase GetFolderForType(UUID principalID, InventoryType invType, AssetType type)
         {
             string invserverURL = "";
             if (GetHandlers.GetIsForeign (principalID, "InventoryServerURI", m_registry, out invserverURL))
@@ -106,7 +108,8 @@ namespace Aurora.Addon.Hypergrid
             return base.GetFolderForType (principalID, invType, type);
         }
 
-        public override InventoryFolderBase GetRootFolder (UUID principalID)
+        [CanBeReflected(ThreatLevel = OpenSim.Services.Interfaces.ThreatLevel.Medium)]
+        public override InventoryFolderBase GetRootFolder(UUID principalID)
         {
             string invserverURL = "";
             if (GetHandlers.GetIsForeign (principalID, "InventoryServerURI", m_registry, out invserverURL))
@@ -117,7 +120,8 @@ namespace Aurora.Addon.Hypergrid
             return base.GetRootFolder (principalID);
         }
 
-        public override InventoryFolderBase GetFolder (InventoryFolderBase folder)
+        [CanBeReflected(ThreatLevel = OpenSim.Services.Interfaces.ThreatLevel.Low)]
+        public override InventoryFolderBase GetFolder(InventoryFolderBase folder)
         {
             string invserverURL = "";
             if (GetHandlers.GetIsForeign (folder.Owner, "InventoryServerURI", m_registry, out invserverURL))
@@ -128,7 +132,8 @@ namespace Aurora.Addon.Hypergrid
             return base.GetFolder (folder);
         }
 
-        public override InventoryItemBase GetItem (InventoryItemBase item)
+        [CanBeReflected(ThreatLevel = OpenSim.Services.Interfaces.ThreatLevel.Low)]
+        public override InventoryItemBase GetItem(InventoryItemBase item)
         {
             string invServerURL = "", assetServerURL = "";
             if (GetHandlers.GetIsForeign (item.Owner, "InventoryServerURI", m_registry, out invServerURL))

@@ -22,9 +22,11 @@ namespace Aurora.Addon.Hypergrid
             if (handlerConfig.GetString ("AgentInfoHandler", "") != Name)
                 return;
 
-            registry.RegisterModuleInterface<IAgentInfoService> (this);
+            registry.RegisterModuleInterface<IAgentInfoService>(this);
+            Init(registry, Name);
         }
 
+        [CanBeReflected(ThreatLevel = OpenSim.Services.Interfaces.ThreatLevel.Low)]
         public override List<string> GetAgentsLocations(string requestor, List<string> userIDs)
         {
             List<string> locations = new List<string> ();

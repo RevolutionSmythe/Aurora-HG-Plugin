@@ -21,13 +21,13 @@ namespace Aurora.Addon.HyperGrid.Handlers
         public override bool StoreFriend (UUID PrincipalID, string Friend, int flags)
         {
             IUserAccountService userAccountService = m_registry.RequestModuleInterface<IUserAccountService> ();
-            UserAccount agentAccount = userAccountService.GetUserAccount (UUID.Zero, PrincipalID);
+            UserAccount agentAccount = userAccountService.GetUserAccount (null, PrincipalID);
             UUID FriendUUID;
             if (!UUID.TryParse(Friend, out FriendUUID))
                 return base.StoreFriend(PrincipalID, Friend, flags);//Already set to a UUI
             else
             {
-                UserAccount friendAccount = userAccountService.GetUserAccount (UUID.Zero, FriendUUID);
+                UserAccount friendAccount = userAccountService.GetUserAccount (null, FriendUUID);
                 if (agentAccount == null || friendAccount == null)
                 {
                     // remote grid users

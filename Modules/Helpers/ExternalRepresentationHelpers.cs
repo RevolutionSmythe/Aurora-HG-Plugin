@@ -32,7 +32,7 @@ using System.Xml;
 using OpenMetaverse;
 using OpenSim.Services.Interfaces;
 
-namespace Aurora.Addon.Hypergrid
+namespace Aurora.Addon.HyperGrid
 {
     /// <summary>
     /// Utilities for manipulating external representations of data structures in OpenSim
@@ -68,7 +68,7 @@ namespace Aurora.Addon.Hypergrid
                     {
                         UUID uuid = UUID.Zero;
                         UUID.TryParse (node.InnerText, out uuid);
-                        creator = userService.GetUserAccount (scopeID, uuid);
+                        creator = userService.GetUserAccount (null, uuid);
                     }
                     if (node.Name == "CreatorData" && node.InnerText != null && node.InnerText != string.Empty)
                         hasCreatorData = true;

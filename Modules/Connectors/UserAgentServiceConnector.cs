@@ -41,7 +41,7 @@ using OpenMetaverse.StructuredData;
 using Nwc.XmlRpc;
 using Nini.Config;
 
-namespace Aurora.Addon.Hypergrid
+namespace Aurora.Addon.HyperGrid
 {
     public class UserAgentServiceConnector : IUserAgentService
     {

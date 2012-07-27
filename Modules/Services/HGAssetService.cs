@@ -39,7 +39,7 @@ using OpenSim.Services.Interfaces;
 using OpenSim.Services.AssetService;
 using OpenSim.Services;
 
-namespace Aurora.Addon.Hypergrid
+namespace Aurora.Addon.HyperGrid
 {
     /// <summary>
     /// Hypergrid asset service. It serves the IAssetService interface,
@@ -174,7 +174,7 @@ namespace Aurora.Addon.Hypergrid
         {
             /*if (meta.CreatorID != null && meta.CreatorID != UUID.Zero)
             {
-                UserAccount creator = m_UserAccountService.GetUserAccount (UUID.Zero, uuid);
+                UserAccount creator = m_UserAccountService.GetUserAccount (null, uuid);
                 if (creator != null)
                     meta.CreatorID = m_ProfileServiceURL + "/" + meta.CreatorID + ";" + creator.FirstName + " " + creator.LastName;
             }*/

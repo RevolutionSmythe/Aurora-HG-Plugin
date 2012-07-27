@@ -123,7 +123,7 @@ namespace OpenSim.Services
         }
     }
 
-    public class InventoryConnectorPostHandler : BaseStreamHandler
+    public class InventoryConnectorPostHandler : BaseRequestHandler
     {
         private readonly IInventoryService m_InventoryService;
         protected string m_SessionID;

@@ -43,7 +43,7 @@ using Aurora.Simulation.Base;
 using Aurora.DataManager;
 using Aurora.Framework;
 
-namespace Aurora.Addon.Hypergrid
+namespace Aurora.Addon.HyperGrid
 {
     public class HypergridLinker : IService, ICommunicationService
     {
@@ -73,13 +73,13 @@ namespace Aurora.Addon.Hypergrid
             {
                 if (m_DefaultRegion == null)
                 {
-                    List<GridRegion> defs = m_GridService.GetDefaultRegions (m_ScopeID);
+                    List<GridRegion> defs = m_GridService.GetDefaultRegions(null);
                     if (defs != null && defs.Count > 0)
                         m_DefaultRegion = defs[0];
                     else
                     {
                         // Get any region
-                        defs = m_GridService.GetRegionsByName (m_ScopeID, "", 1);
+                        defs = m_GridService.GetRegionsByName(null, "", null, null);
                         if (defs != null && defs.Count > 0)
                             m_DefaultRegion = defs[0];
                         else
@@ -295,7 +295,7 @@ namespace Aurora.Addon.Hypergrid
                 MainConsole.Instance.WarnFormat ("[HYPERGRID LINKER]: Please set this grid's Gatekeeper's address in [GridService]!");
 
             // Check for free coordinates
-            GridRegion region = m_GridService.GetRegionByPosition (regInfo.ScopeID, regInfo.RegionLocX, regInfo.RegionLocY);
+            GridRegion region = m_GridService.GetRegionByPosition(null, regInfo.RegionLocX, regInfo.RegionLocY);
             if (region != null)
             {
                 MainConsole.Instance.WarnFormat ("[HYPERGRID LINKER]: Coordinates {0}-{1} are already occupied by region {2} with uuid {3}",
@@ -330,7 +330,7 @@ namespace Aurora.Addon.Hypergrid
                 return false;
             }
 
-            region = m_GridService.GetRegionByUUID (scopeID, regionID);
+            region = m_GridService.GetRegionByUUID (null, regionID);
             if (region != null)
             {
                 MainConsole.Instance.DebugFormat ("[HYPERGRID LINKER]: Region already exists in coordinates {0} {1}",
@@ -376,7 +376,7 @@ namespace Aurora.Addon.Hypergrid
             GridRegion regInfo = null;
 
             //TODO:
-            List<GridRegion> regions = m_Database.Get (mapName, m_ScopeID);
+            List<GridRegion> regions = m_Database.Get(mapName, null, null, null);
             if (regions != null && regions.Count > 0)
             {
                 Aurora.Framework.RegionFlags rflags = (Aurora.Framework.RegionFlags)regions[0].Flags;
@@ -428,7 +428,7 @@ namespace Aurora.Addon.Hypergrid
                 ymax = int.MaxValue;
 
             // Check for any regions that are within the possible teleport range to the linked region
-            List<GridRegion> regions = m_GridService.GetRegionRange (m_ScopeID, (int)xmin, (int)xmax, (int)ymin, (int)ymax);
+            List<GridRegion> regions = m_GridService.GetRegionRange (null, (int)xmin, (int)xmax, (int)ymin, (int)ymax);
             if (regions.Count == 0)
             {
                 return false;

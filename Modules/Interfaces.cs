@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Text;
+using System.Xml;
+using System.Xml.Serialization;
 using Aurora.Framework;
 using Aurora.Simulation.Base;
 using OpenMetaverse;
 using GridRegion = OpenSim.Services.Interfaces.GridRegion;
 
-namespace Aurora.Addon.Hypergrid
+namespace Aurora.Addon.HyperGrid
 {
     public interface IGatekeeperService
     {
@@ -31,5 +34,23 @@ namespace Aurora.Addon.Hypergrid
     public interface IInstantMessageSimConnector
     {
         bool SendInstantMessage (GridInstantMessage im);
+    }
+
+    public static class ServerUtils
+    {
+        public static byte[] SerializeResult(XmlSerializer xs, object data)
+        {
+            MemoryStream ms = new MemoryStream();
+            XmlTextWriter xw = new XmlTextWriter(ms, Util.UTF8);
+            xw.Formatting = Formatting.Indented;
+            xs.Serialize(xw, data);
+            xw.Flush();
+
+            ms.Seek(0, SeekOrigin.Begin);
+            byte[] ret = ms.GetBuffer();
+            Array.Resize(ref ret, (int)ms.Length);
+
+            return ret;
+        }
     }
 }

@@ -37,7 +37,7 @@ using Nwc.XmlRpc;
 using OpenMetaverse;
 using Aurora.Framework;
 
-namespace Aurora.Addon.Hypergrid
+namespace Aurora.Addon.HyperGrid
 {
     public class HypergridHandlers
     {

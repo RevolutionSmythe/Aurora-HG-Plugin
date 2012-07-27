@@ -43,7 +43,7 @@ using OpenSim.Services.Interfaces;
 using OpenSim.Services.Connectors.Simulation;
 using GridRegion = OpenSim.Services.Interfaces.GridRegion;
 
-namespace Aurora.Addon.Hypergrid
+namespace Aurora.Addon.HyperGrid
 {
     public class GatekeeperServiceConnector : SimulationServiceConnector
     {
@@ -319,20 +319,16 @@ namespace Aurora.Addon.Hypergrid
                 args["destination_uuid"] = OSD.FromString (destination.RegionID.ToString ());
                 args["teleport_flags"] = OSD.FromString (flags.ToString ());
 
-                OSDMap result = WebUtils.PostToService (uri, args, true, true);
-                if (result["Success"].AsBoolean ())
+                string r = WebUtils.PostToService (uri, args);
+                OSDMap unpacked = OSDParser.DeserializeJson(r) as OSDMap;
+                if (unpacked != null)
                 {
-                    OSDMap unpacked = (OSDMap)result["_Result"];
-
-                    if (unpacked != null)
-                    {
-                        reason = unpacked["reason"].AsString ();
-                        myipaddress = unpacked["your_ip"].AsString ();
-                        return unpacked["success"].AsBoolean ();
-                    }
+                    reason = unpacked["reason"].AsString();
+                    myipaddress = unpacked["your_ip"].AsString();
+                    return unpacked["success"].AsBoolean();
                 }
 
-                reason = result["Message"] != null ? result["Message"].AsString () : "error";
+                reason = unpacked["Message"] != null ? unpacked["Message"].AsString() : "error";
                 return false;
             }
             catch (Exception e)

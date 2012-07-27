@@ -41,25 +41,25 @@ using OpenSim.Region.Framework.Scenes;
 using OpenSim.Services.Connectors;
 using OpenSim.Services.GridService;
 
-namespace Aurora.Addon.Hypergrid
+namespace Aurora.Addon.HyperGrid
 {
     public class RobustHGridServicesConnector : GridService
     {
         #region IGridService
 
-        public override List<GridRegion> GetRegionsByName (UUID scopeID, string name, int maxNumber)
+        public override List<GridRegion> GetRegionsByName (List<UUID> scopes, string name, uint? start, uint? count)
         {
-            return AddHGRegions(scopeID, name, base.GetRegionsByName (scopeID, name, maxNumber));
+            return AddHGRegions(name, base.GetRegionsByName (scopes, name, start, count));
         }
 
-        private List<GridRegion> AddHGRegions (UUID scopeID, string name, List<GridRegion> list)
+        private List<GridRegion> AddHGRegions (string name, List<GridRegion> list)
         {
             HypergridLinker linker = m_registryCore.RequestModuleInterface<HypergridLinker> ();
             if (list.Count == 0)
             {
                 if (IsHGURL (name))
                 {
-                    GridRegion r = linker.LinkRegion (scopeID, name);
+                    GridRegion r = linker.LinkRegion (UUID.Zero, name);
                     if (r != null)
                         list.Add (r);
                 }

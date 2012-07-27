@@ -36,7 +36,7 @@ using Aurora.Framework;
 using OpenSim.Services;
 using OpenSim.Services.Connectors;
 
-namespace Aurora.Addon.Hypergrid
+namespace Aurora.Addon.HyperGrid
 {
     /// <summary>
     /// Hypergrid inventory service. It serves the IInventoryService interface,
@@ -47,8 +47,6 @@ namespace Aurora.Addon.Hypergrid
     /// </summary>
     public class HGInventoryService : InventoryService, IExternalInventoryService
     {
-        private IRegistryCore m_registry;
-
         public override void Initialize (IConfigSource config, IRegistryCore registry)
         {
             IConfig hgConfig = config.Configs["HyperGrid"];
@@ -132,11 +130,6 @@ namespace Aurora.Addon.Hypergrid
         //}
 
         public override bool CreateUserInventory (UUID principalID, bool createDefaultItems)
-        {
-            return false;
-        }
-
-        public override bool CreateUserRootFolder (UUID principalID)
         {
             return false;
         }
@@ -352,7 +345,7 @@ namespace Aurora.Addon.Hypergrid
         {
             InventoryItemBase it = base.GetItem (item);
 
-            UserAccount user = m_UserAccountService.GetUserAccount (UUID.Zero, UUID.Parse(it.CreatorId));
+            UserAccount user = m_UserAccountService.GetUserAccount (null, UUID.Parse(it.CreatorId));
 
             // Adjust the creator data
             if (user != null && it != null && (it.CreatorData == null || it.CreatorData == string.Empty))

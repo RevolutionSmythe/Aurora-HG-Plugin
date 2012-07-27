@@ -42,7 +42,7 @@ using Aurora.Framework.Servers.HttpServer;
 using Aurora.Simulation.Base;
 using OpenMetaverse;
 
-namespace Aurora.Addon.Hypergrid
+namespace Aurora.Addon.HyperGrid
 {
     public class HGFriendsServerConnector : IService
     {
@@ -69,7 +69,7 @@ namespace Aurora.Addon.Hypergrid
         }
     }
 
-    public class HGFriendsServerPostHandler : BaseStreamHandler
+    public class HGFriendsServerPostHandler : BaseRequestHandler
     {
         private IFriendsService m_FriendsService;
         private IUserAgentService m_UserAgentService;

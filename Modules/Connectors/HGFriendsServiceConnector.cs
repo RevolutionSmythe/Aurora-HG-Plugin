@@ -34,12 +34,12 @@ using Aurora.Framework;
 using Aurora.Framework.Servers.HttpServer;
 using OpenSim.Services.Interfaces;
 using FriendInfo = OpenSim.Services.Interfaces.FriendInfo;
-using Aurora.Framework;
+using OpenSim.Services.Robust;
 using Aurora.DataManager;
 using Aurora.Simulation.Base;
 using OpenMetaverse;
 
-namespace Aurora.Addon.Hypergrid
+namespace Aurora.Addon.HyperGrid
 {
     public class HGFriendsServicesConnector
     {

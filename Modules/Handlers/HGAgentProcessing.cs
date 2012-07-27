@@ -14,7 +14,7 @@ using System.Threading;
 using GridRegion = OpenSim.Services.Interfaces.GridRegion;
 using OpenSim.Services.Interfaces;
 
-namespace Aurora.Addon.Hypergrid
+namespace Aurora.Addon.HyperGrid
 {
     public class HGAgentProcessing : AgentProcessing
     {
@@ -150,7 +150,7 @@ namespace Aurora.Addon.Hypergrid
                 {
                     if(circuitData.child)
                         circuitData.reallyischild = true;
-                    regionAccepted = SimulationService.CreateAgent (neighbor, ref circuitData,
+                    regionAccepted = SimulationService.CreateAgent (neighbor, circuitData,
                             TeleportFlags, agentData, out requestedUDPPort, out reason);
                 }
                 if (regionAccepted)
@@ -233,7 +233,7 @@ namespace Aurora.Addon.Hypergrid
         protected GridRegion GetFinalDestination (GridRegion region)
         {
             IGridService GridService = m_registry.RequestModuleInterface<IGridService> ();
-            int flags = GridService.GetRegionFlags (UUID.Zero, region.RegionID);
+            int flags = GridService.GetRegionFlags (null, region.RegionID);
             MainConsole.Instance.DebugFormat ("[HG ENTITY TRANSFER MODULE]: region {0} flags: {1}", region.RegionID, flags);
             if ((flags & (int)Aurora.Framework.RegionFlags.Hyperlink) != 0)
             {

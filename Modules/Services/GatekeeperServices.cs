@@ -43,7 +43,7 @@ using Nini.Config;
 using Aurora.Framework;
 using Aurora.Simulation.Base;
 
-namespace Aurora.Addon.Hypergrid
+namespace Aurora.Addon.HyperGrid
 {
     public class GatekeeperService : IService, IGatekeeperService
     {
@@ -113,24 +113,24 @@ namespace Aurora.Addon.Hypergrid
             GridRegion region = null;
             if (m_defaultRegion != "")//This overrides all
             {
-                region = m_GridService.GetRegionByName(UUID.Zero, m_defaultRegion);
+                region = m_GridService.GetRegionByName(null, m_defaultRegion);
                 if (region != null)
                 {
                     m_foundDefaultRegion = true;
                     return region;
                 }
             }
-            List<GridRegion> defs = m_GridService.GetDefaultRegions (UUID.Zero);
+            List<GridRegion> defs = m_GridService.GetDefaultRegions(null);
             if (defs != null && defs.Count > 0)
                 region = FindRegion(defs);
             if (region == null)
             {
-                defs = m_GridService.GetFallbackRegions (UUID.Zero, 0, 0);
+                defs = m_GridService.GetFallbackRegions(null, 0, 0);
                 if (defs != null && defs.Count > 0)
                     region = FindRegion (defs);
                 if (region == null)
                 {
-                    defs = m_GridService.GetSafeRegions (UUID.Zero, 0, 0);
+                    defs = m_GridService.GetSafeRegions(null, 0, 0);
                     if (defs != null && defs.Count > 0)
                         region = FindRegion (defs);
                     if (region == null)
@@ -176,7 +176,7 @@ namespace Aurora.Addon.Hypergrid
             }
             else
             {
-                region = m_GridService.GetRegionByName (UUID.Zero, regionName);
+                region = m_GridService.GetRegionByName(null, regionName);
                 if (region == null)
                 {
                     if(!m_foundDefaultRegion)
@@ -213,7 +213,7 @@ namespace Aurora.Addon.Hypergrid
                 return m_DefaultGatewayRegion;
             }
 
-            GridRegion region = m_GridService.GetRegionByUUID (UUID.Zero, regionID);
+            GridRegion region = m_GridService.GetRegionByUUID(null, regionID);
             if(region != null && (region.Flags & (int)Aurora.Framework.RegionFlags.Safe) == (int)Aurora.Framework.RegionFlags.Safe)
                 return region;
             if (!m_foundDefaultRegion || m_DefaultGatewayRegion == null)
@@ -280,7 +280,7 @@ namespace Aurora.Addon.Hypergrid
             if (m_UserAccountService != null)
             {
                 // Check to see if we have a local user with that UUID
-                account = m_UserAccountService.GetUserAccount (UUID.Zero, aCircuit.AgentID);
+                account = m_UserAccountService.GetUserAccount (null, aCircuit.AgentID);
                 if (account != null)
                 {
                     // Make sure this is the user coming home, and not a foreign user with same UUID as a local user
@@ -319,7 +319,7 @@ namespace Aurora.Addon.Hypergrid
             //
             // Get the region
             //
-            destination = m_GridService.GetRegionByUUID (UUID.Zero, destination.RegionID);
+            destination = m_GridService.GetRegionByUUID(null, destination.RegionID);
             if (destination == null)
             {
                 reason = "Destination region not found";
@@ -359,7 +359,9 @@ namespace Aurora.Addon.Hypergrid
             {
                 //Remove any previous users
                 string ServerCapsBase = Aurora.Framework.Capabilities.CapsUtil.GetRandomCapsObjectPath ();
-                m_CapsService.CreateCAPS(aCircuit.AgentID, Aurora.Framework.Capabilities.CapsUtil.GetCapsSeedPath(ServerCapsBase), destination.RegionHandle, true, aCircuit);
+                m_CapsService.CreateCAPS(aCircuit.AgentID,
+                    Aurora.Framework.Capabilities.CapsUtil.GetCapsSeedPath(ServerCapsBase),
+                    destination.RegionHandle, true, aCircuit, 0);
 
                 regionClientCaps = m_CapsService.GetClientCapsService (aCircuit.AgentID).GetCapsService (destination.RegionHandle);
                 if (aCircuit.ServiceURLs == null)
@@ -368,7 +370,7 @@ namespace Aurora.Addon.Hypergrid
             }
             aCircuit.child = false;//FIX THIS, OPENSIM ALWAYS SENDS CHILD!
             int requestedUDPPort = 0;
-            bool success = m_SimulationService.CreateAgent (destination, ref aCircuit, (uint)loginFlag, null, out requestedUDPPort, out reason);
+            bool success = m_SimulationService.CreateAgent (destination, aCircuit, (uint)loginFlag, null, out requestedUDPPort, out reason);
             if (success)
             {
                 if (regionClientCaps != null)

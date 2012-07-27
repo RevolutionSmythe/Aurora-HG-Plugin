@@ -40,7 +40,7 @@ using OpenMetaverse;
 using Aurora.Simulation.Base;
 using Nini.Config;
 
-namespace Aurora.Addon.Hypergrid
+namespace Aurora.Addon.HyperGrid
 {
     public struct UserData
     {
@@ -169,7 +169,7 @@ namespace Aurora.Addon.Hypergrid
 
         void HandleUUIDNameRequest (UUID uuid, IClientAPI remote_client)
         {
-            UserAccount account = remote_client.Scene.UserAccountService.GetUserAccount(UUID.Zero, uuid);
+            UserAccount account = remote_client.Scene.UserAccountService.GetUserAccount (null, uuid);
             if(account == null)
             {
                 string[] names = GetUserNames(uuid);
@@ -240,7 +240,7 @@ namespace Aurora.Addon.Hypergrid
                 return returnstring;
             }
 
-            UserAccount account = UserAccountService.GetUserAccount (UUID.Zero, uuid);
+            UserAccount account = UserAccountService.GetUserAccount (null, uuid);
 
             if (account != null)
             {
@@ -312,7 +312,7 @@ namespace Aurora.Addon.Hypergrid
 
         public string GetUserUUI (UUID userID)
         {
-            UserAccount account = UserAccountService.GetUserAccount (UUID.Zero, userID);
+            UserAccount account = UserAccountService.GetUserAccount (null, userID);
             if (account != null)
                 return userID.ToString ();
 
@@ -343,7 +343,7 @@ namespace Aurora.Addon.Hypergrid
 
             UserData user = new UserData ();
             user.Id = uuid;
-            UserAccount account = UserAccountService.GetUserAccount (UUID.Zero, uuid);
+            UserAccount account = UserAccountService.GetUserAccount (null, uuid);
             if (account != null)
             {
                 user.FirstName = account.FirstName;

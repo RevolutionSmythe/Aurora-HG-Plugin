@@ -42,7 +42,7 @@ using Nwc.XmlRpc;
 using OpenMetaverse;
 using OpenMetaverse.StructuredData;
 
-namespace Aurora.Addon.Hypergrid
+namespace Aurora.Addon.HyperGrid
 {
     public class InstantMessageServerConnector : IService
     {

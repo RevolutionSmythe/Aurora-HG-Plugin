@@ -39,13 +39,12 @@ using Aurora.Framework.Servers.HttpServer;
 using OpenMetaverse;
 using OpenMetaverse.StructuredData;
 using Nini.Config;
-using Aurora.Framework;
 using Aurora.DataManager;
 using Aurora.Simulation.Base;
 
-namespace Aurora.Addon.Hypergrid
+namespace Aurora.Addon.HyperGrid
 {
-    public class GatekeeperAgentHandler : BaseStreamHandler
+    public class GatekeeperAgentHandler : BaseRequestHandler
     {
         private ISimulationService m_SimulationService;
         private IGatekeeperService m_GatekeeperService;

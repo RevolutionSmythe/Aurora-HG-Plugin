@@ -37,6 +37,7 @@ using OpenMetaverse.StructuredData;
 using Aurora.Framework;
 using Aurora.Framework.Servers.HttpServer;
 using OpenSim.Services.Interfaces;
+using OpenSim.Services.Robust;
 
 namespace OpenSim.Services.Connectors
 {
@@ -652,5 +653,41 @@ namespace OpenSim.Services.Connectors
 
         #endregion
 
+
+
+        public bool CreateUserInventory(UUID user, bool createDefaultItems, out List<InventoryItemBase> defaultInventoryItems)
+        {
+            throw new NotImplementedException();
+        }
+
+        public InventoryFolderBase GetFolderByOwnerAndName(UUID userID, string FolderName)
+        {
+            throw new NotImplementedException();
+        }
+
+        public InventoryItemBase InnerGiveInventoryItem(UUID recipient, UUID senderId, InventoryItemBase item, UUID recipientFolderId, bool doOwnerCheck)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void AddItemAsync(InventoryItemBase item, NoParam success)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void MoveItemsAsync(UUID agentID, List<InventoryItemBase> items, NoParam success)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void GiveInventoryItemAsync(UUID recipient, UUID senderId, UUID itemId, UUID recipientFolderId, bool doOwnerCheck, GiveItemParam success)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void GiveInventoryFolderAsync(UUID recipientId, UUID senderId, UUID folderId, UUID recipientParentFolderId, GiveFolderParam success)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

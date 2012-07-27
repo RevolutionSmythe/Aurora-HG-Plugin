@@ -42,7 +42,7 @@ using Aurora.Simulation.Base;
 using OpenMetaverse;
 using Nini.Config;
 
-namespace Aurora.Addon.Hypergrid
+namespace Aurora.Addon.HyperGrid
 {
     /// <summary>
     /// This service is for HG1.5 only, to make up for the fact that clients don't
@@ -151,7 +151,7 @@ namespace Aurora.Addon.Hypergrid
             {
                 if (uinfo.HomeRegionID != UUID.Zero)
                 {
-                    home = m_GridService.GetRegionByUUID (UUID.Zero, uinfo.HomeRegionID);
+                    home = m_GridService.GetRegionByUUID(null, uinfo.HomeRegionID);
                     position = uinfo.HomePosition;
                     lookAt = uinfo.HomeLookAt;
                 }
@@ -429,7 +429,7 @@ namespace Aurora.Addon.Hypergrid
             {
                 if (friend.IsOnline)
                 {
-                    GridRegion ourRegion = m_GridService.GetRegionByUUID (UUID.Zero, friend.CurrentRegionID);
+                    GridRegion ourRegion = m_GridService.GetRegionByUUID(null, friend.CurrentRegionID);
                     if (ourRegion != null)
                         m_asyncPostService.Post (ourRegion.RegionHandle,
                             SyncMessageHelper.AgentStatusChange (foreignUserID, UUID.Parse (friend.UserID), true));
@@ -516,7 +516,7 @@ namespace Aurora.Addon.Hypergrid
                 MainConsole.Instance.WarnFormat ("[USER AGENT SERVICE]: Unable to get server URLs because user account service is missing");
                 return new Dictionary<string, object> ();
             }
-            UserAccount account = m_UserAccountService.GetUserAccount (UUID.Zero /*!!!*/, userID);
+            UserAccount account = m_UserAccountService.GetUserAccount (null /*!!!*/, userID);
             if (account != null)
                 return account.ServiceURLs;
 
@@ -542,7 +542,7 @@ namespace Aurora.Addon.Hypergrid
         public string GetUUI (UUID userID, UUID targetUserID)
         {
             // Let's see if it's a local user
-            UserAccount account = m_UserAccountService.GetUserAccount (UUID.Zero, targetUserID);
+            UserAccount account = m_UserAccountService.GetUserAccount (null, targetUserID);
             if (account != null)
                 return targetUserID.ToString () + ";" + m_GridName + ";" + account.FirstName + " " + account.LastName;
 

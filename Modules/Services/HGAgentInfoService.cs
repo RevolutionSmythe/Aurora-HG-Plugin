@@ -7,7 +7,7 @@ using OpenSim.Services.Interfaces;
 using OpenSim.Services;
 using OpenMetaverse;
 
-namespace Aurora.Addon.Hypergrid
+namespace Aurora.Addon.HyperGrid
 {
     public class HGAgentInfoService : AgentInfoService
     {
@@ -35,7 +35,7 @@ namespace Aurora.Addon.Hypergrid
                 List<string> l = base.GetAgentsLocations(requestor, new List<string>() { userID });
                 if (l[0] == "NotOnline")
                 {
-                    UserAccount acc = m_registry.RequestModuleInterface<IUserAccountService> ().GetUserAccount (UUID.Zero, UUID.Parse (userID));
+                    UserAccount acc = m_registry.RequestModuleInterface<IUserAccountService> ().GetUserAccount (null, UUID.Parse (userID));
                     if (acc == null)
                     {
                         IUserFinder userFinder = m_registry.RequestModuleInterface<IUserFinder> ();

@@ -35,7 +35,7 @@ using Aurora.Simulation.Base;
 using OpenSim.Services.Interfaces;
 using Aurora.Framework.Servers.HttpServer;
 
-namespace Aurora.Addon.Hypergrid
+namespace Aurora.Addon.HyperGrid
 {
     public class GatekeeperServiceInConnector : IService
     {

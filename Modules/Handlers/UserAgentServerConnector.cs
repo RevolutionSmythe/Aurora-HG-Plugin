@@ -42,7 +42,7 @@ using Aurora.Simulation.Base;
 using Nwc.XmlRpc;
 using OpenMetaverse;
 
-namespace Aurora.Addon.Hypergrid
+namespace Aurora.Addon.HyperGrid
 {
     public class UserAgentServerConnector : IService
     {

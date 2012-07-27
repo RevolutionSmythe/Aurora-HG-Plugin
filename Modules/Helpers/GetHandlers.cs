@@ -5,7 +5,7 @@ using Aurora.Framework;
 using OpenMetaverse;
 using OpenSim.Services.Interfaces;
 
-namespace Aurora.Addon.Hypergrid
+namespace Aurora.Addon.HyperGrid
 {
     public class GetHandlers
     {

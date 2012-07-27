@@ -37,6 +37,7 @@ using OpenMetaverse.StructuredData;
 using Aurora.Framework;
 using Aurora.Framework.Servers.HttpServer;
 using OpenSim.Services.Interfaces;
+using Aurora.Addon.HyperGrid;
 
 namespace OpenSim.Services
 {
@@ -137,7 +138,7 @@ namespace OpenSim.Services
         }
     }
 
-    public class AssetServerPostHandler : BaseStreamHandler
+    public class AssetServerPostHandler : BaseRequestHandler
     {
         // private static readonly ILog MainConsole.Instance = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -166,17 +167,17 @@ namespace OpenSim.Services
                         m_AssetService.UpdateContent(UUID.Parse(p[1]), asset.Data) != UUID.Zero;
 
                 xs = new XmlSerializer(typeof(bool));
-                return WebUtils.SerializeResult(xs, result);
+                return ServerUtils.SerializeResult(xs, result);
             }
 
             string id = m_AssetService.Store(asset).ToString();
 
             xs = new XmlSerializer(typeof(string));
-            return WebUtils.SerializeResult(xs, id);
+            return ServerUtils.SerializeResult(xs, id);
         }
     }
 
-    public class AssetServerDeleteHandler : BaseStreamHandler
+    public class AssetServerDeleteHandler : BaseRequestHandler
     {
         // private static readonly ILog MainConsole.Instance = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
@@ -213,11 +214,11 @@ namespace OpenSim.Services
             }
 
             XmlSerializer xs = new XmlSerializer(typeof(bool));
-            return WebUtils.SerializeResult(xs, result);
+            return ServerUtils.SerializeResult(xs, result);
         }
     }
 
-    public class AssetServerGetHandler : BaseStreamHandler
+    public class AssetServerGetHandler : BaseRequestHandler
     {
         private readonly IAssetService m_AssetService;
         protected string m_SessionID;
@@ -268,7 +269,7 @@ namespace OpenSim.Services
                     bool RetVal = m_AssetService.GetExists(p[0]);
                     XmlSerializer xs =
                         new XmlSerializer(typeof(AssetBase));
-                    result = WebUtils.SerializeResult(xs, RetVal);
+                    result = ServerUtils.SerializeResult(xs, RetVal);
 
                     if (result == null)
                     {
@@ -296,7 +297,7 @@ namespace OpenSim.Services
                 if (asset != null)
                 {
                     XmlSerializer xs = new XmlSerializer(typeof(AssetBase));
-                    result = Util.CompressBytes(WebUtils.SerializeResult(xs, asset));
+                    result = Util.CompressBytes(ServerUtils.SerializeResult(xs, asset));
 
                     httpResponse.StatusCode = (int)HttpStatusCode.OK;
                     httpResponse.ContentType =

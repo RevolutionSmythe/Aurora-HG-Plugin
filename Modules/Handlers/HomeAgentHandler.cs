@@ -43,7 +43,7 @@ using OpenMetaverse.StructuredData;
 using Nini.Config;
 
 
-namespace Aurora.Addon.Hypergrid
+namespace Aurora.Addon.HyperGrid
 {
     public class HomeAgentHandler
     {

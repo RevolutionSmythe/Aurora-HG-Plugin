@@ -41,7 +41,6 @@ using GridRegion = OpenSim.Services.Interfaces.GridRegion;
 using OpenMetaverse;
 using Aurora.Simulation.Base;
 using Aurora.DataManager;
-using Aurora.Framework;
 
 namespace Aurora.Addon.HyperGrid
 {
@@ -132,7 +131,8 @@ namespace Aurora.Addon.HyperGrid
 
             if (MainConsole.Instance != null)
             {
-                MainConsole.Instance.Commands.AddCommand ("link-region",
+                MainConsole.Instance.Info("[HYPERGRID LINKER]: Enabled");
+                MainConsole.Instance.Commands.AddCommand("link-region",
                     "link-region <Xloc> <Yloc> <ServerURI> [<RemoteRegionName>]",
                     "Link a HyperGrid Region. Examples for <ServerURI>: http://grid.net:8002/ or http://example.org/path/foo.php", RunCommand);
                 MainConsole.Instance.Commands.AddCommand ("unlink-region",

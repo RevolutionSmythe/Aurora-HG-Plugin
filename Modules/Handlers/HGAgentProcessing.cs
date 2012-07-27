@@ -26,6 +26,7 @@ namespace Aurora.Addon.HyperGrid
                 return;
 
             m_registry = registry;
+            _config = config;
             IConfig agentConfig = config.Configs["AgentProcessing"];
             if (agentConfig != null)
             {

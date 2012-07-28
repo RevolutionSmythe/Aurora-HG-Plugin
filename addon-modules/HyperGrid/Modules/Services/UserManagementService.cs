@@ -214,7 +214,7 @@ namespace Aurora.Addon.HyperGrid
         public bool IsLocalGridUser(UUID uuid)
         {
             UserData data;
-            return GetUserData(uuid, out data);
+            return !GetUserData(uuid, out data);
         }
 
         public string GetUserName(UUID uuid)

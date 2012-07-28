@@ -145,7 +145,7 @@ namespace Aurora.Addon.HyperGrid
                     }
                     string userAgentDriver = circuitData.ServiceURLs[GetHandlers.Helpers_HomeURI].ToString ();
                     IUserAgentService connector = new UserAgentServiceConnector (userAgentDriver);
-                    regionAccepted = connector.LoginAgentToGrid (circuitData, originalDest, neighbor, out reason);
+                    regionAccepted = connector.LoginAgentToGrid (circuitData, originalDest, neighbor, new IPEndPoint(IPAddress.Parse(circuitData.IPAddress), circuitData.RegionUDPPort), out reason);
                 }
                 else
                 {

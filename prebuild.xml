@@ -55,8 +55,6 @@
 	<Reference name="XMLRPC" path="../../../bin/"/>
 
 	<Files>
-		<Match pattern="*.cs" recurse="true">
-			<Exclude name="Tests" pattern="Tests"/>
-		</Match>
+		<Match pattern="*.cs" recurse="true"/>
 	</Files>
 </Project>

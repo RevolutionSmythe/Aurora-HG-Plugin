@@ -253,8 +253,8 @@ namespace Aurora.Addon.HyperGrid
             // 10/3/2010
             // I added the client_ip up to the regular AgentCircuitData, so this doesn't need to be here.
             // This need cleaning elsewhere...
-            //if (ipaddress != null)
-            //    args["client_ip"] = OSD.FromString(ipaddress.Address.ToString());
+            if (ipaddress != null)
+                args["client_ip"] = OSD.FromString(ipaddress.Address.ToString());
 
             return args;
         }

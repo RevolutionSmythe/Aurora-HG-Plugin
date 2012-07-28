@@ -1,4 +1,0 @@
-E:\Aurora\Aurora-Sim\bin\Aurora.Addon.HyperGrid.dll.mdb
-E:\Aurora\Aurora-Sim\bin\Aurora.Addon.HyperGrid.dll
-E:\Aurora\Aurora-Sim\addon-modules\HyperGrid\Modules\obj\x86\Debug\Aurora.Addon.HyperGrid.dll
-E:\Aurora\Aurora-Sim\addon-modules\HyperGrid\Modules\obj\x86\Debug\Aurora.Addon.HyperGrid.dll.mdb

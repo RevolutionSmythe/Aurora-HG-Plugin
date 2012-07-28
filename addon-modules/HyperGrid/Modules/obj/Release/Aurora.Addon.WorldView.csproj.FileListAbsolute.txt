@@ -1,3 +1,0 @@
-E:\Aurora\Aurora-Sim\bin\Aurora.Addon.WorldView.dll
-E:\Aurora\Aurora-Sim\addon-modules\WorldView\Modules\obj\Release\ResolveAssemblyReference.cache
-E:\Aurora\Aurora-Sim\addon-modules\WorldView\Modules\obj\Release\Aurora.Addon.WorldView.dll

@@ -236,33 +236,6 @@ namespace Aurora.Addon.HyperGrid
                 authURL, aCircuit.AgentID, destination.RegionName);
 
             //
-            // Check client
-            //
-            /*if (m_AllowedClients != string.Empty)
-            {
-                Regex arx = new Regex (m_AllowedClients);
-                Match am = arx.Match (aCircuit.Viewer);
-
-                if (!am.Success)
-                {
-                    MainConsole.Instance.InfoFormat ("[GATEKEEPER SERVICE]: Login failed, reason: client {0} is not allowed", aCircuit.Viewer);
-                    return false;
-                }
-            }
-
-            if (m_DeniedClients != string.Empty)
-            {
-                Regex drx = new Regex (m_DeniedClients);
-                Match dm = drx.Match (aCircuit.Viewer);
-
-                if (dm.Success)
-                {
-                    MainConsole.Instance.InfoFormat ("[GATEKEEPER SERVICE]: Login failed, reason: client {0} is denied", aCircuit.Viewer);
-                    return false;
-                }
-            }*/
-
-            //
             // Authenticate the user
             //
             if (!Authenticate (aCircuit))
@@ -281,7 +254,7 @@ namespace Aurora.Addon.HyperGrid
             {
                 // Check to see if we have a local user with that UUID
                 account = m_UserAccountService.GetUserAccount (null, aCircuit.AgentID);
-                if (account != null)
+                if (account != null && account.UserFlags != 1024)
                 {
                     // Make sure this is the user coming home, and not a foreign user with same UUID as a local user
                     if (m_UserAgentService != null)
@@ -307,12 +280,23 @@ namespace Aurora.Addon.HyperGrid
             // Login the presence, if it's not there yet (by the login service)
             //
             UserInfo presence = m_PresenceService.GetUserInfo (aCircuit.AgentID.ToString());
-            if (presence != null && presence.IsOnline) // it has been placed there by the login service
+            if (account != null && account.UserFlags != 1024 && presence != null && presence.IsOnline) // it has been placed there by the login service
             {
-            //    isFirstLogin = true;
+                //    isFirstLogin = true;
             }
             else
-                m_PresenceService.SetLoggedIn (aCircuit.AgentID.ToString (), true, true, destination.RegionID);
+            {
+                IUserAgentService userAgentService = new UserAgentServiceConnector(aCircuit.ServiceURLs["HomeURI"].ToString());
+                Vector3 position = Vector3.UnitY, lookAt = Vector3.UnitY;
+                GridRegion finalDestination = userAgentService.GetHomeRegion(aCircuit.AgentID, out position, out lookAt);
+                if (finalDestination == null)
+                {
+                    reason = "You do not have a home position set.";
+                    return false;
+                }
+                m_PresenceService.SetHomePosition(aCircuit.AgentID.ToString(), finalDestination.RegionID, position, lookAt);
+                m_PresenceService.SetLoggedIn(aCircuit.AgentID.ToString(), true, true, destination.RegionID);
+            }
 
             MainConsole.Instance.DebugFormat ("[GATEKEEPER SERVICE]: Login presence ok");
 
@@ -347,6 +331,7 @@ namespace Aurora.Addon.HyperGrid
                     MainConsole.Instance.WarnFormat ("[GATEKEEPER SERVICE]: Malformed HomeURI (this should never happen): {0}", aCircuit.ServiceURLs["HomeURI"]);
                     aCircuit.lastname = "@" + aCircuit.ServiceURLs["HomeURI"].ToString ();
                 }
+                m_UserAccountService.CacheAccount(new UserAccount(UUID.Zero, aCircuit.AgentID, aCircuit.firstname + aCircuit.lastname, "") { UserFlags = 1024 });
             }
 
             retry:
@@ -365,7 +350,7 @@ namespace Aurora.Addon.HyperGrid
 
                 regionClientCaps = m_CapsService.GetClientCapsService (aCircuit.AgentID).GetCapsService (destination.RegionHandle);
                 if (aCircuit.ServiceURLs == null)
-                    aCircuit.ServiceURLs = new Dictionary<string, object> ();
+                    aCircuit.ServiceURLs = new Dictionary<string, object>();
                 aCircuit.ServiceURLs["IncomingCAPSHandler"] = regionClientCaps.CapsUrl;
             }
             aCircuit.child = false;//FIX THIS, OPENSIM ALWAYS SENDS CHILD!
@@ -375,6 +360,12 @@ namespace Aurora.Addon.HyperGrid
             {
                 if (regionClientCaps != null)
                 {
+                    if (requestedUDPPort == 0)
+                        requestedUDPPort = destination.ExternalEndPoint.Port;
+                    IPAddress ipAddress = destination.ExternalEndPoint.Address;
+                    aCircuit.RegionUDPPort = requestedUDPPort;
+                    regionClientCaps.LoopbackRegionIP = ipAddress;
+                    regionClientCaps.CircuitData.RegionUDPPort = requestedUDPPort;
                     OSDMap responseMap = (OSDMap)OSDParser.DeserializeJson (reason);
                     OSDMap SimSeedCaps = (OSDMap)responseMap["CapsUrls"];
                     regionClientCaps.AddCAPS (SimSeedCaps);

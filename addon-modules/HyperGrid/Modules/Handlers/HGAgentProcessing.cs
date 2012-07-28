@@ -159,16 +159,16 @@ namespace Aurora.Addon.HyperGrid
                     IPAddress ipAddress = neighbor.ExternalEndPoint.Address;
                     string otherRegionsCapsURL;
                     //If the region accepted us, we should get a CAPS url back as the reason, if not, its not updated or not an Aurora region, so don't touch it.
-                    if (reason != "")
+                    if (reason != "" && reason != "authorized")
                     {
-                        OSDMap responseMap = (OSDMap)OSDParser.DeserializeJson (reason);
+                        OSDMap responseMap = (OSDMap)OSDParser.DeserializeJson(reason);
                         OSDMap SimSeedCaps = (OSDMap)responseMap["CapsUrls"];
-                        if(responseMap.ContainsKey("OurIPForClient"))
+                        if (responseMap.ContainsKey("OurIPForClient"))
                         {
                             string ip = responseMap["OurIPForClient"].AsString();
                             ipAddress = IPAddress.Parse(ip);
                         }
-                        otherRegionService.AddCAPS (SimSeedCaps);
+                        otherRegionService.AddCAPS(SimSeedCaps);
                         otherRegionsCapsURL = otherRegionService.CapsUrl;
                     }
                     else
@@ -177,12 +177,13 @@ namespace Aurora.Addon.HyperGrid
                         #region OpenSim teleport compatibility!
 
                         useCallbacks = false;
-                        otherRegionsCapsURL = neighbor.ServerURI + 
-                            CapsUtil.GetCapsSeedPath (circuitData.CapsPath);
+                        otherRegionsCapsURL = neighbor.ServerURI +
+                            CapsUtil.GetCapsSeedPath(circuitData.CapsPath);
                         otherRegionService.CapsUrl = otherRegionsCapsURL;
 
                         #endregion
                     }
+
                     if (requestedUDPPort == 0)
                         requestedUDPPort = neighbor.ExternalEndPoint.Port;
                     if(ipAddress == null)

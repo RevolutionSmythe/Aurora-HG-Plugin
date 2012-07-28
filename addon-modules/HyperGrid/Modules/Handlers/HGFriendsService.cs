@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using OpenSim.Services.Interfaces;
 using Nini.Config;
 using FriendInfo = OpenSim.Services.Interfaces.FriendInfo;
-using Aurora.Framework;
 using Aurora.Simulation.Base;
 using OpenSim.Services.Friends;
 

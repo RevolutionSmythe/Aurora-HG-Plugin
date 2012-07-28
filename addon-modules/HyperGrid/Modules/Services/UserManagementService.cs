@@ -42,28 +42,10 @@ using Nini.Config;
 
 namespace Aurora.Addon.HyperGrid
 {
-    public struct UserData
-    {
-        public UUID Id;
-        public string FirstName;
-        public string LastName;
-        public string HomeURL;
-        public Dictionary<string, object> ServerURLs;
-    }
-
-    public class UserManagementModule : BaseUserFinding, ISharedRegionModule, IUserManagement
+    public class UserManagementModule : ISharedRegionModule
     {
         private List<IScene> m_Scenes = new List<IScene> ();
-
-        protected override IUserAccountService UserAccountService
-        {
-            get
-            {
-                if(m_Scenes.Count > 0)
-                    return m_Scenes[0].RequestModuleInterface<IUserAccountService> ();
-                return null;
-            }
-        }
+        private IUserFinder m_userFinder = null;
 
         #region ISharedRegionModule
 
@@ -92,7 +74,7 @@ namespace Aurora.Addon.HyperGrid
         {
             get
             {
-                return "UserManagement Module";
+                return "UserManagementModule";
             }
         }
 
@@ -110,16 +92,14 @@ namespace Aurora.Addon.HyperGrid
             if (hgConfig == null || !hgConfig.GetBoolean ("Enabled", false))
                 return;
 
-            m_Scenes.Add (scene);
+            m_Scenes.Add(scene);
+            m_userFinder = scene.RequestModuleInterface<IUserFinder>();
 
-            scene.RegisterModuleInterface<IUserManagement> (this);
             scene.EventManager.OnNewClient += EventManager_OnNewClient;
-            scene.EventManager.OnStartupFullyComplete += EventManager_OnStartupFullyComplete;
         }
 
         public void RemoveRegion (IScene scene)
         {
-            scene.UnregisterModuleInterface<IUserManagement> (this);
             m_Scenes.Remove (scene);
         }
 
@@ -134,36 +114,14 @@ namespace Aurora.Addon.HyperGrid
         public void Close ()
         {
             m_Scenes.Clear ();
-            m_UserCache.Clear ();
         }
 
         #endregion ISharedRegionModule
 
         #region Event Handlers
 
-        void EventManager_OnStartupFullyComplete (IScene scene, List<string> data)
-        {
-            // let's sniff all the user names referenced by objects in the scene
-            MainConsole.Instance.DebugFormat ("[USER MANAGEMENT MODULE]: Caching creators' data from {0} ({1} objects)...", scene.RegionInfo.RegionName, scene.Entities.Count);
-            scene.ForEachSceneEntity (delegate (ISceneEntity sog)
-            {
-                CacheCreators (sog);
-            });
-        }
-
         void EventManager_OnNewClient (IClientAPI client)
         {
-            UserData ud = new UserData ();
-            ud.FirstName = client.FirstName;
-            ud.LastName = client.LastName;
-            ud.ServerURLs = client.RequestClientInfo ().ServiceURLs;
-            if (ud.ServerURLs != null && ud.ServerURLs.ContainsKey (GetHandlers.Helpers_HomeURI))
-                ud.HomeURL = ud.ServerURLs[GetHandlers.Helpers_HomeURI].ToString ();
-            else
-                ud.HomeURL = "";
-            if (ud.ServerURLs == null)
-                ud.ServerURLs = new Dictionary<string, object> ();
-            m_UserCache[client.AgentId] = ud;//Cache them
             client.OnNameFromUUIDRequest += new UUIDNameRequest (HandleUUIDNameRequest);
         }
 
@@ -172,7 +130,7 @@ namespace Aurora.Addon.HyperGrid
             UserAccount account = remote_client.Scene.UserAccountService.GetUserAccount (null, uuid);
             if(account == null)
             {
-                string[] names = GetUserNames(uuid);
+                string[] names = m_userFinder.GetUserNames(uuid);
                 if(names.Length == 2)
                 {
                     //MainConsole.Instance.DebugFormat("[XXX] HandleUUIDNameRequest {0} is {1} {2}", uuid, names[0], names[1]);
@@ -183,22 +141,11 @@ namespace Aurora.Addon.HyperGrid
 
         #endregion Event Handlers
 
-        private void CacheCreators (ISceneEntity sog)
-        {
-            //MainConsole.Instance.DebugFormat("[USER MANAGEMENT MODULE]: processing {0} {1}; {2}", sog.RootPart.Name, sog.RootPart.CreatorData, sog.RootPart.CreatorIdentification);
-            AddUser (sog.RootChild.CreatorID, sog.RootChild.CreatorData);
-
-            foreach (ISceneChildEntity sop in sog.ChildrenEntities())
-            {
-                AddUser (sop.CreatorID, sop.CreatorData);
-                foreach (TaskInventoryItem item in sop.TaskInventory.Values)
-                    AddUser (item.CreatorID, item.CreatorData);
-            }
-        }
-
         private void HandleShowUsers (string[] cmd)
         {
-            if (m_UserCache.Count == 0)
+            IGenericsConnector generics = Aurora.DataManager.DataManager.RequestPlugin<IGenericsConnector>();
+            List<UserData> users = generics.GetGenerics<UserData>(UUID.Zero, "ForeignUsers");
+            if (users.Count == 0)
             {
                 MainConsole.Instance.Output ("No users not found");
                 return;
@@ -206,66 +153,74 @@ namespace Aurora.Addon.HyperGrid
 
             MainConsole.Instance.Output ("UUID                                 User Name");
             MainConsole.Instance.Output ("-----------------------------------------------------------------------------");
-            foreach (KeyValuePair<UUID, UserData> kvp in m_UserCache)
+            foreach (UserData kvp in users)
             {
                 MainConsole.Instance.Output (String.Format ("{0} {1} {2}",
-                       kvp.Key, kvp.Value.FirstName, kvp.Value.LastName));
+                       kvp.Id, kvp.FirstName, kvp.LastName));
             }
             return;
         }
     }
 
-    public class BaseUserFinding
+    public class HGUserFinder : IService, IUserFinder
     {
-        /// <summary>
-        /// The cache, only one copy!
-        /// </summary>
-        protected static Dictionary<UUID, UserData> m_UserCache = new Dictionary<UUID, UserData> ();
+        protected IRegistryCore m_registry;
+        protected IUserAccountService UserAccountService;
+        protected IGenericsConnector m_generics;
 
-        protected virtual IUserAccountService UserAccountService
+        public void Initialize (IConfigSource config, IRegistryCore registry)
         {
-            get { return null; }
+            IConfig hgConfig = config.Configs["HyperGrid"];
+            if (hgConfig == null || !hgConfig.GetBoolean ("Enabled", false))
+                return;
+
+            m_registry = registry;
+            m_registry.RegisterModuleInterface<IUserFinder> (this);
         }
+
+        public void Start (IConfigSource config, IRegistryCore registry)
+        {
+            UserAccountService = registry.RequestModuleInterface<IUserAccountService>();
+            m_generics = Aurora.DataManager.DataManager.RequestPlugin<IGenericsConnector>();
+        }
+
+        public void FinishedStartup ()
+        {
+        }
+
 
         #region IUserManagement
 
-        protected string[] GetUserNames (UUID uuid)
+        private bool GetUserData(UUID uuid, out UserData data)
+        {
+            return (data = m_generics.GetGeneric<UserData>(UUID.Zero, "ForeignUsers", uuid.ToString())) != null;
+        }
+
+        public string[] GetUserNames(UUID uuid)
         {
             string[] returnstring = new string[2];
 
-            if (m_UserCache.ContainsKey (uuid))
+            UserData data;
+            if (GetUserData(uuid, out data))
             {
-                returnstring[0] = m_UserCache[uuid].FirstName;
-                returnstring[1] = m_UserCache[uuid].LastName;
+                returnstring[0] = data.FirstName;
+                returnstring[1] = data.LastName;
                 return returnstring;
             }
 
-            UserAccount account = UserAccountService.GetUserAccount (null, uuid);
-
-            if (account != null)
-            {
-                returnstring[0] = account.FirstName;
-                returnstring[1] = account.LastName;
-
-                UserData user = new UserData ();
-                user.FirstName = account.FirstName;
-                user.LastName = account.LastName;
-
-                lock (m_UserCache)
-                    m_UserCache[uuid] = user;
-            }
-            else
-            {
-                return new string[0];
-            }
-
-            return returnstring;
+            return new string[0];
         }
 
-        public string GetUserName (UUID uuid)
+        public bool IsLocalGridUser(UUID uuid)
+        {
+            UserData data;
+            return GetUserData(uuid, out data);
+        }
+
+        public string GetUserName(UUID uuid)
         {
             //MainConsole.Instance.DebugFormat("[XXX] GetUserName {0}", uuid);
-            string[] names = GetUserNames (uuid);
+            string[] names = GetUserNames(uuid);
             if (names.Length == 2)
             {
                 string firstname = names[0];
@@ -277,53 +232,55 @@ namespace Aurora.Addon.HyperGrid
             return "(hippos)";
         }
 
-        public string GetUserHomeURL (UUID userID)
+        public string GetUserHomeURL(UUID userID)
         {
-            if (m_UserCache.ContainsKey (userID))
-                return m_UserCache[userID].HomeURL;
+            UserData data;
+            if (GetUserData(userID, out data))
+                return data.HomeURL;
 
             return string.Empty;
         }
 
-        public bool GetUserExists (UUID userID)
+        public bool GetUserExists(UUID userID)
         {
-            return m_UserCache.ContainsKey (userID);
+            UserData data;
+            return GetUserData(userID, out data);
         }
 
-        public string GetUserServerURL (UUID userID, string serverType)
+        public string GetUserServerURL(UUID userID, string serverType)
         {
-            if (m_UserCache.ContainsKey (userID))
+            UserData userdata;
+            if (GetUserData(userID, out userdata))
             {
-                UserData userdata = m_UserCache[userID];
-                if (userdata.ServerURLs != null && userdata.ServerURLs.ContainsKey (serverType) && userdata.ServerURLs[serverType] != null)
-                    return userdata.ServerURLs[serverType].ToString ();
+                if (userdata.ServerURLs != null && userdata.ServerURLs.ContainsKey(serverType) && userdata.ServerURLs[serverType] != null)
+                    return userdata.ServerURLs[serverType].ToString();
 
                 if (userdata.HomeURL != string.Empty)
                 {
-                    UserAgentServiceConnector uConn = new UserAgentServiceConnector (userdata.HomeURL);
-                    userdata.ServerURLs = uConn.GetServerURLs (userID);
-                    if (userdata.ServerURLs != null && userdata.ServerURLs.ContainsKey (serverType) && userdata.ServerURLs[serverType] != null)
-                        return userdata.ServerURLs[serverType].ToString ();
+                    UserAgentServiceConnector uConn = new UserAgentServiceConnector(userdata.HomeURL);
+                    userdata.ServerURLs = uConn.GetServerURLs(userID);
+                    if (userdata.ServerURLs != null && userdata.ServerURLs.ContainsKey(serverType) && userdata.ServerURLs[serverType] != null)
+                        return userdata.ServerURLs[serverType].ToString();
                 }
             }
 
             return string.Empty;
         }
 
-        public string GetUserUUI (UUID userID)
+        public string GetUserUUI(UUID userID)
         {
-            UserAccount account = UserAccountService.GetUserAccount (null, userID);
+            UserAccount account = UserAccountService.GetUserAccount(null, userID);
             if (account != null)
-                return userID.ToString ();
+                return userID.ToString();
 
-            if (m_UserCache.ContainsKey (userID))
+            UserData ud;
+            if (GetUserData(userID, out ud))
             {
-                UserData ud = m_UserCache[userID];
                 string homeURL = ud.HomeURL;
                 string first = ud.FirstName, last = ud.LastName;
-                if (ud.LastName.StartsWith ("@"))
+                if (ud.LastName.StartsWith("@"))
                 {
-                    string[] parts = ud.FirstName.Split ('.');
+                    string[] parts = ud.FirstName.Split('.');
                     if (parts.Length >= 2)
                     {
                         first = parts[0];
@@ -333,38 +290,46 @@ namespace Aurora.Addon.HyperGrid
                 }
             }
 
-            return userID.ToString ();
+            return userID.ToString();
         }
 
-        public void AddUser (UUID uuid, string userData)
+        public void AddUser(UUID uuid, string firstName, string lastName, Dictionary<string, object> serviceUrls)
         {
-            if (m_UserCache.ContainsKey (uuid))
-                return;
-
-            UserData user = new UserData ();
-            user.Id = uuid;
-            UserAccount account = UserAccountService.GetUserAccount (null, uuid);
-            if (account != null)
-            {
-                user.FirstName = account.FirstName;
-                user.LastName = account.LastName;
-                // user.ProfileURL = we should initialize this to the default
-            }
+            UserData ud = new UserData();
+            ud.FirstName = firstName;
+            ud.Id = uuid;
+            ud.LastName = lastName;
+            ud.ServerURLs = serviceUrls;
+            if (ud.ServerURLs != null && ud.ServerURLs.ContainsKey(GetHandlers.Helpers_HomeURI))
+                ud.HomeURL = ud.ServerURLs[GetHandlers.Helpers_HomeURI].ToString();
             else
+                ud.HomeURL = "";
+            if (ud.ServerURLs == null)
+                ud.ServerURLs = new Dictionary<string, object>();
+
+            m_generics.AddGeneric(UUID.Zero, "ForeignUsers", uuid.ToString(), ud.ToOSD());
+        }
+
+        public void AddUser(UUID uuid, string userData)
+        {
+            UserData user = new UserData();
+            user.Id = uuid;
+            UserAccount account = UserAccountService.GetUserAccount(null, uuid);
+            if (account == null)
             {
                 if (userData != null && userData != string.Empty)
                 {
                     bool addOne = false;
-                    string[] parts = userData.Split (';');
+                    string[] parts = userData.Split(';');
                     if (parts.Length >= 1)
                     {
                         UUID sid;
-                        if (UUID.TryParse (parts[0], out sid))
+                        if (UUID.TryParse(parts[0], out sid))
                             addOne = true;
                         user.HomeURL = parts[addOne ? 1 : 0];
                         try
                         {
-                            Uri uri = new Uri (parts[addOne ? 1 : 0]);
+                            Uri uri = new Uri(parts[addOne ? 1 : 0]);
                             user.LastName = "@" + uri.Authority;
                         }
                         catch (UriFormatException)
@@ -373,50 +338,12 @@ namespace Aurora.Addon.HyperGrid
                         }
                     }
                     if (parts.Length >= 2)
-                        user.FirstName = parts[addOne ? 2 : 1].Replace (' ', '.');
+                        user.FirstName = parts[addOne ? 2 : 1].Replace(' ', '.');
+                    m_generics.AddGeneric(UUID.Zero, "ForeignUsers", uuid.ToString(), user.ToOSD());
                 }
-                else
-                    return;
             }
-
-            lock (m_UserCache)
-                m_UserCache[uuid] = user;
-        }
-
-        public void AddUser (UUID uuid, string first, string last, string profileURL)
-        {
-            AddUser (uuid, profileURL + ";" + first + " " + last);
         }
 
         #endregion IUserManagement
-    }
-
-    public class HGUserFinder : BaseUserFinding, IService, IUserFinder
-    {
-        protected IRegistryCore m_registry;
-
-        protected override IUserAccountService UserAccountService
-        {
-            get { return m_registry.RequestModuleInterface<IUserAccountService>(); }
-        }
-
-        public void Initialize (IConfigSource config, IRegistryCore registry)
-        {
-            IConfig hgConfig = config.Configs["HyperGrid"];
-            if (hgConfig == null || !hgConfig.GetBoolean ("Enabled", false))
-                return;
-
-            HGUtil.Registry = registry;
-            m_registry = registry;
-            m_registry.RegisterModuleInterface<IUserFinder> (this);
-        }
-
-        public void Start (IConfigSource config, IRegistryCore registry)
-        {
-        }
-
-        public void FinishedStartup ()
-        {
-        }
     }
 }

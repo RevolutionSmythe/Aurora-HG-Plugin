@@ -35,7 +35,6 @@ using Aurora.Framework.Servers.HttpServer;
 using OpenSim.Services.Interfaces;
 using GridRegion = OpenSim.Services.Interfaces.GridRegion;
 using FriendInfo = OpenSim.Services.Interfaces.FriendInfo;
-using Aurora.Framework;
 using Aurora.DataManager;
 using Aurora.Simulation.Base;
 

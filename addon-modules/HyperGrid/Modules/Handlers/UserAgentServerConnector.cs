@@ -36,7 +36,6 @@ using Aurora.Framework;
 using Aurora.Framework.Servers.HttpServer;
 using OpenSim.Services.Interfaces;
 using GridRegion = OpenSim.Services.Interfaces.GridRegion;
-using Aurora.Framework;
 using Aurora.DataManager;
 using Aurora.Simulation.Base;
 using Nwc.XmlRpc;

@@ -1,0 +1,5 @@
+E:\Aurora\Aurora-Sim\bin\Aurora.Addon.HyperGrid.dll
+E:\Aurora\Aurora-Sim\bin\Aurora.Addon.HyperGrid.pdb
+E:\Aurora\Aurora-Sim\addon-modules\HyperGrid\Modules\obj\Debug\ResolveAssemblyReference.cache
+E:\Aurora\Aurora-Sim\addon-modules\HyperGrid\Modules\obj\Debug\Aurora.Addon.HyperGrid.dll
+E:\Aurora\Aurora-Sim\addon-modules\HyperGrid\Modules\obj\Debug\Aurora.Addon.HyperGrid.pdb

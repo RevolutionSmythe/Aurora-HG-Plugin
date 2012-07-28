@@ -1,0 +1,10 @@
+F:\Aurora\Aurora-Sim\bin\Aurora.Addon.HyperGrid.dll
+F:\Aurora\Aurora-Sim\bin\Aurora.Addon.HyperGrid.pdb
+F:\Aurora\Aurora-Sim\addon-modules\HyperGrid\Modules\obj\x86\Debug\ResolveAssemblyReference.cache
+F:\Aurora\Aurora-Sim\addon-modules\HyperGrid\Modules\obj\x86\Debug\Aurora.Addon.HyperGrid.dll
+F:\Aurora\Aurora-Sim\addon-modules\HyperGrid\Modules\obj\x86\Debug\Aurora.Addon.HyperGrid.pdb
+C:\Everything\Code\Projects\Aurora\Aurora-Sim-Network\addon-modules\HyperGrid\Modules\obj\x86\Debug\Aurora.Addon.HyperGrid.csprojResolveAssemblyReference.cache
+C:\Everything\Code\Projects\Aurora\Aurora-Sim-Network\addon-modules\HyperGrid\Modules\obj\x86\Debug\Aurora.Addon.HyperGrid.dll
+C:\Everything\Code\Projects\Aurora\Aurora-Sim-Network\addon-modules\HyperGrid\Modules\obj\x86\Debug\Aurora.Addon.HyperGrid.pdb
+C:\Everything\Code\Projects\Aurora\Aurora-Sim-Network\bin\Aurora.Addon.HyperGrid.dll
+C:\Everything\Code\Projects\Aurora\Aurora-Sim-Network\bin\Aurora.Addon.HyperGrid.pdb

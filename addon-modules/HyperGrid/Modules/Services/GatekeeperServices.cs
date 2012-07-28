@@ -40,7 +40,6 @@ using OpenMetaverse;
 using OpenMetaverse.StructuredData;
 
 using Nini.Config;
-using Aurora.Framework;
 using Aurora.Simulation.Base;
 
 namespace Aurora.Addon.HyperGrid
@@ -54,6 +53,7 @@ namespace Aurora.Addon.HyperGrid
         private static IUserAgentService m_UserAgentService;
         private static ISimulationService m_SimulationService;
         private static ICapsService m_CapsService;
+        private static IUserFinder m_userFinder;
 
         protected string m_AllowedClients = string.Empty;
         protected string m_DeniedClients = string.Empty;
@@ -103,8 +103,9 @@ namespace Aurora.Addon.HyperGrid
             m_GridService = m_registry.RequestModuleInterface<IGridService> ();
             m_PresenceService = m_registry.RequestModuleInterface<IAgentInfoService> ();
             m_UserAccountService = m_registry.RequestModuleInterface<IUserAccountService> ();
-            m_UserAgentService = m_registry.RequestModuleInterface<IUserAgentService> ();
-            m_SimulationService = m_registry.RequestModuleInterface<ISimulationService> ();
+            m_UserAgentService = m_registry.RequestModuleInterface<IUserAgentService>();
+            m_SimulationService = m_registry.RequestModuleInterface<ISimulationService>();
+            m_userFinder = m_registry.RequestModuleInterface<IUserFinder>();
             m_DefaultGatewayRegion = FindDefaultRegion ();
         }
 
@@ -254,7 +255,7 @@ namespace Aurora.Addon.HyperGrid
             {
                 // Check to see if we have a local user with that UUID
                 account = m_UserAccountService.GetUserAccount (null, aCircuit.AgentID);
-                if (account != null && account.UserFlags != 1024)
+                if (account != null && m_userFinder.IsLocalGridUser(account.PrincipalID))
                 {
                     // Make sure this is the user coming home, and not a foreign user with same UUID as a local user
                     if (m_UserAgentService != null)
@@ -280,7 +281,7 @@ namespace Aurora.Addon.HyperGrid
             // Login the presence, if it's not there yet (by the login service)
             //
             UserInfo presence = m_PresenceService.GetUserInfo (aCircuit.AgentID.ToString());
-            if (account != null && account.UserFlags != 1024 && presence != null && presence.IsOnline) // it has been placed there by the login service
+            if (m_userFinder.IsLocalGridUser(aCircuit.AgentID) && presence != null && presence.IsOnline) // it has been placed there by the login service
             {
                 //    isFirstLogin = true;
             }
@@ -331,6 +332,7 @@ namespace Aurora.Addon.HyperGrid
                     MainConsole.Instance.WarnFormat ("[GATEKEEPER SERVICE]: Malformed HomeURI (this should never happen): {0}", aCircuit.ServiceURLs["HomeURI"]);
                     aCircuit.lastname = "@" + aCircuit.ServiceURLs["HomeURI"].ToString ();
                 }
+                m_userFinder.AddUser(aCircuit.AgentID, aCircuit.firstname, aCircuit.lastname, aCircuit.ServiceURLs);
                 m_UserAccountService.CacheAccount(new UserAccount(UUID.Zero, aCircuit.AgentID, aCircuit.firstname + aCircuit.lastname, "") { UserFlags = 1024 });
             }
 
